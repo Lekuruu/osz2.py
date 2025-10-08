@@ -28,9 +28,9 @@ class XXTEA:
         for i in range(full_word_count):
             offset = buf_start + i * MAX_BYTES
             if encrypt:
-                self.encrypt_fixed_word_array(buffer, offset)
+                self.encrypt_fixed_word_array(self.key, buffer, offset)
             else:
-                self.decrypt_fixed_word_array(buffer, offset)
+                self.decrypt_fixed_word_array(self.key, buffer, offset)
 
         if left_over == 0:
             return
@@ -40,9 +40,9 @@ class XXTEA:
 
         if self.n > 1:
             if encrypt:
-                self.encrypt_words(buffer, leftover_start)
+                self.encrypt_words(self.n, self.key, buffer, leftover_start)
             else:
-                self.decrypt_words(buffer, leftover_start)
+                self.decrypt_words(self.n, self.key, buffer, leftover_start)
 
             left_over -= self.n * 4
             if left_over == 0:
@@ -59,9 +59,8 @@ class XXTEA:
 
         buffer[leftover_start:leftover_start + left_over] = remaining
 
-    def encrypt_words(self, data: bytearray, offset: int) -> None:
-        n = self.n
-        key = self.key
+    @staticmethod
+    def encrypt_words(n: int, key: List[int], data: bytearray, offset: int) -> None:
         v = [struct.unpack_from('<I', data, offset + i * 4)[0] for i in range(n)]
 
         rounds = 6 + 52 // n
@@ -77,12 +76,12 @@ class XXTEA:
 
             for p in range(n - 1):
                 y = v[p + 1]
-                v[p] = (v[p] + self._mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
+                v[p] = (v[p] + XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
                 z = v[p]
 
             y = v[0]
             p = n - 1
-            v[n - 1] = (v[n - 1] + self._mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
+            v[n - 1] = (v[n - 1] + XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
             z = v[n - 1]
             rounds -= 1
 
@@ -90,9 +89,8 @@ class XXTEA:
         for i in range(n):
             struct.pack_into('<I', data, offset + i * 4, v[i])
 
-    def decrypt_words(self, data: bytearray, offset: int) -> None:
-        n = self.n
-        key = self.key
+    @staticmethod
+    def decrypt_words(n: int, key: List[int], data: bytearray, offset: int) -> None:
         v = [struct.unpack_from('<I', data, offset + i * 4)[0] for i in range(n)]
 
         rounds = 6 + 52 // n
@@ -105,12 +103,12 @@ class XXTEA:
 
             for p in range(n - 1, 0, -1):
                 z = v[p - 1]
-                v[p] = (v[p] - self._mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
+                v[p] = (v[p] - XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
                 y = v[p]
 
             z = v[n - 1]
             p = 0
-            v[0] = (v[0] - self._mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
+            v[0] = (v[0] - XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
             y = v[0]
 
             sum_val = (sum_val - TEA_DELTA) & 0xFFFFFFFF
@@ -120,11 +118,11 @@ class XXTEA:
         for i in range(n):
             struct.pack_into('<I', data, offset + i * 4, v[i])
 
-    def encrypt_fixed_word_array(self, data: bytearray, offset: int) -> None:
+    @staticmethod
+    def encrypt_fixed_word_array(key: List[int], data: bytearray, offset: int) -> None:
         if len(data) - offset < MAX_BYTES:
             return
 
-        key = self.key
         v = [struct.unpack_from('<I', data, offset + i * 4)[0] for i in range(MAX_WORDS)]
 
         rounds = 6 + 52 // MAX_WORDS
@@ -138,24 +136,24 @@ class XXTEA:
 
             for p in range(MAX_WORDS - 1):
                 y = v[p + 1]
-                v[p] = (v[p] + self._mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
+                v[p] = (v[p] + XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
                 z = v[p]
 
             y = v[0]
             p = MAX_WORDS - 1
-            v[MAX_WORDS - 1] = (v[MAX_WORDS - 1] + self._mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
+            v[MAX_WORDS - 1] = (v[MAX_WORDS - 1] + XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
             z = v[MAX_WORDS - 1]
             rounds -= 1
 
         for i in range(MAX_WORDS):
             struct.pack_into('<I', data, offset + i * 4, v[i])
 
-    def decrypt_fixed_word_array(self, data: bytearray, offset: int) -> None:
+    @staticmethod
+    def decrypt_fixed_word_array(key: List[int], data: bytearray, offset: int) -> None:
         if len(data) - offset < MAX_BYTES:
             return
 
         v = [struct.unpack_from('<I', data, offset + i * 4)[0] for i in range(MAX_WORDS)]
-        key = self.key
 
         rounds = 6 + 52 // MAX_WORDS
         sum_val = (rounds * TEA_DELTA) & 0xFFFFFFFF
@@ -167,12 +165,12 @@ class XXTEA:
 
             for p in range(MAX_WORDS - 1, 0, -1):
                 z = v[p - 1]
-                v[p] = (v[p] - self._mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
+                v[p] = (v[p] - XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
                 y = v[p]
 
             z = v[MAX_WORDS - 1]
             p = 0
-            v[0] = (v[0] - self._mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
+            v[0] = (v[0] - XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
             y = v[0]
 
             sum_val = (sum_val - TEA_DELTA) & 0xFFFFFFFF
@@ -183,6 +181,6 @@ class XXTEA:
             struct.pack_into('<I', data, offset + i * 4, v[i])
 
     @staticmethod
-    def _mx(y: int, z: int, sum_val: int, key_val: int) -> int:
+    def mx(y: int, z: int, sum_val: int, key_val: int) -> int:
         return ((((z >> 5) ^ (y << 2)) + ((y >> 3) ^ (z << 4))) ^ 
                 ((sum_val ^ y) + (key_val ^ z))) & 0xFFFFFFFF
