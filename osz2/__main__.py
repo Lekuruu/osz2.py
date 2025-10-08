@@ -29,7 +29,7 @@ def save_osz2(package: Osz2Package, output: str) -> None:
         print(f"  -> {file.filename} ({len(file.content)} bytes)")
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog="osz2", description="A tool to decrypt and extract osz2 files")
     parser.add_argument("input", help="The path to the osz2 file to decrypt (required)")
     parser.add_argument("output", help="The path to put the extracted osz2 files (required)")
     parser.add_argument("--key-type", choices=["osz2", "osf2"], default="osz2", help="The key generation method to use (default: osz2)")
