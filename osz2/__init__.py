@@ -1,7 +1,7 @@
 
 __author__ = "Lekuru"
 __email__ = "contact@lekuru.xyz"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __license__ = "MIT"
 
 from .metadata import MetadataType
