@@ -1,10 +1,10 @@
 
 from typing import Dict, List
 
-from osz2.constants import KNOWN_PLAIN
-from .metadata import MetadataType
 from .keys import KeyType, Mapping as KeyMapping
 from .xxtea_reader import XXTEAReader
+from .constants import KNOWN_PLAIN
+from .metadata import MetadataType
 from .file import File
 from .xtea import XTEA
 from .utils import *
@@ -108,8 +108,7 @@ class Osz2Package:
         encrypted_magic = bytearray(reader.read(64))
         xtea = XTEA(key)
         xtea.decrypt(encrypted_magic, 0, 64)
-
-        assert encrypted_magic == KNOWN_PLAIN, "Magic plain mismatch!"
+        assert encrypted_magic == KNOWN_PLAIN, "Invalid encryption key"
 
         # Read encrypted i32 length
         length = struct.unpack("<I", reader.read(4))[0]
