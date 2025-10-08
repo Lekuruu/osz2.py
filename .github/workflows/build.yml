@@ -47,26 +47,6 @@ jobs:
         run: |
           pip install -U --no-index --find-links=deps deps/*
 
-      - name: Install distribution dependencies
-        run: |
-          rm -rf junit
-          pip install build
-        if: matrix.python-version == 3.11
-
-      - name: Create distribution package
-        run: |
-          echo "include requirements.txt" > MANIFEST.in
-          pip install -r requirements.txt
-          python -m build
-        if: matrix.python-version == 3.11
-
-      - name: Upload distribution package
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist
-        if: matrix.python-version == 3.11
-
       - name: Run test script
         run: |
           python cli.py "./tests/Karoo13 - Tic Tac Toe.osz2" "./output"
