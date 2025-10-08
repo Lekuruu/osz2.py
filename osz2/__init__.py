@@ -6,6 +6,7 @@ __license__ = "MIT"
 
 from .metadata import MetadataType
 from .package import Osz2Package
+from .keys import KeyType
 from .file import File
 
 from .simple_cryptor import SimpleCryptor

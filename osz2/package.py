@@ -1,9 +1,9 @@
 
-from osz2.xxtea_reader import XXTEAReader
-from osz2.xtea import XTEA
 from typing import Dict, List
-
 from .metadata import MetadataType
+from .keys import KeyType, Mapping as KeyMapping
+from .xxtea_reader import XXTEAReader
+from .xtea import XTEA
 from .file import File
 from .utils import *
 
@@ -12,10 +12,16 @@ import struct
 import io
 
 class Osz2Package:
-    def __init__(self, reader: io.BufferedReader, metadata_only: bool = False) -> None:
+    def __init__(
+        self,
+        reader: io.BufferedReader,
+        metadata_only: bool = False,
+        key_type: KeyType = KeyType.OSZ2
+    ) -> None:
         self.metadata: Dict[MetadataType, str] = {}
         self.filenames: Dict[str, int] = {}
         self.files: List[File] = []
+        self.key_type = key_type
         self.key: bytes = b""
 
         self.metadata_hash: bytes = b""
@@ -30,14 +36,14 @@ class Osz2Package:
             self.read_files(reader)
 
     @classmethod
-    def from_file(cls, path: str, metadata_only: bool = False) -> "Osz2Package":
+    def from_file(cls, path: str, metadata_only=False, key_type=KeyType.OSZ2) -> "Osz2Package":
         with open(path, "rb") as f:
-            return cls(f, metadata_only)
+            return cls(f, metadata_only, key_type)
 
     @classmethod
-    def from_bytes(cls, data: bytes, metadata_only: bool = False) -> "Osz2Package":
+    def from_bytes(cls, data: bytes, metadata_only=False, key_type=KeyType.OSZ2) -> "Osz2Package":
         with io.BytesIO(data) as f:
-            return cls(f, metadata_only)
+            return cls(f, metadata_only, key_type)
 
     def read_header(self, reader: io.BufferedReader) -> None:
         magic = reader.read(3)
@@ -54,14 +60,10 @@ class Osz2Package:
         self.read_metadata(reader)
         self.read_file_names(reader)
 
-        assert MetadataType.Creator in self.metadata, "Metadata is missing creator"
-        assert MetadataType.BeatmapSetID in self.metadata, "Metadata is missing beatmapset ID"
-
-        creator = self.metadata[MetadataType.Creator]
-        beatmapset_id = self.metadata[MetadataType.BeatmapSetID]
-
-        seed = f"{creator}yhxyfjo5{beatmapset_id}"
-        self.key = hashlib.md5(seed.encode()).digest()
+        # Generate key based on metadata and key type
+        # Usually this is just the MD5 of "<creator>yhxyfjo5<beatmapsetID>"
+        key_generator = KeyMapping[self.key_type]
+        self.key = key_generator(self.metadata)
 
     def read_metadata(self, reader: io.BufferedReader) -> None:
         buffer = reader.read(4)
