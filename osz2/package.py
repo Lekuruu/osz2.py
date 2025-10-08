@@ -35,6 +35,13 @@ class Osz2Package:
             # Read the files if requested
             self.read_files(reader)
 
+    @property
+    def beatmap_files(self) -> List[File]:
+        return [
+            file for file in self.files
+            if file.filename.endswith(".osu")
+        ]
+
     @classmethod
     def from_file(cls, path: str, metadata_only=False, key_type=KeyType.OSZ2) -> "Osz2Package":
         with open(path, "rb") as f:
