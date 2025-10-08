@@ -1,5 +1,5 @@
 
-from .package import Osz2Package
+from osz2.package import Osz2Package
 from pathlib import Path
 
 import argparse

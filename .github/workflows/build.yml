@@ -47,6 +47,10 @@ jobs:
         run: |
           pip install -U --no-index --find-links=deps deps/*
 
+      - name: Install osz2 package
+        run: |
+          pip install -e .
+
       - name: Run test script
         run: |
           python osz2 "./tests/Karoo13 - Tic Tac Toe.osz2" "./output"
