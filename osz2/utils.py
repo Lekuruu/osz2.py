@@ -2,9 +2,10 @@
 import datetime
 import hashlib
 import struct
+import typing
 import io
 
-def bytes_to_uint32_array(data: bytes) -> list[int]:
+def bytes_to_uint32_array(data: bytes) -> typing.List[int]:
     return [x[0] for x in struct.iter_unpack("<I", data)]
 
 def read_string(reader: io.BufferedReader) -> str:
