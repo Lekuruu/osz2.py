@@ -2,7 +2,7 @@
 from osz2.xxtea import XXTEA
 from io import BytesIO
 
-class XXTeaReader:
+class XXTEAReader:
     def __init__(self, reader: BytesIO, key: list[int]) -> None:
         self.reader: BytesIO = reader
         self.xxtea: XXTEA = XXTEA(key)
