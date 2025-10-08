@@ -1,7 +1,8 @@
 
 from .simple_cryptor import SimpleCryptor
+from numba import njit, prange
 from typing import List
-import struct
+import numpy as np
 
 MAX_WORDS = 16
 MAX_BYTES = MAX_WORDS * 4
@@ -12,7 +13,10 @@ class XXTEA:
 
     def __init__(self, key: List[int]) -> None:
         self.cryptor = SimpleCryptor(key)
-        self.key = key
+        self.key = np.array(key, dtype=np.uint32)
+
+        # Pre-compute all possible key permutations for faster lookup
+        self.key_table = np.array([[key[i ^ e] for i in range(4)] for e in range(4)], dtype=np.uint32)
         self.n = 0
 
     def decrypt(self, buffer: bytearray, start: int, count: int) -> None:
@@ -25,12 +29,12 @@ class XXTEA:
         full_word_count = count // MAX_BYTES
         left_over = count % MAX_BYTES
 
-        for i in range(full_word_count):
-            offset = buf_start + i * MAX_BYTES
+        # Process full blocks
+        if full_word_count > 0:
             if encrypt:
-                self.encrypt_fixed_word_array(self.key, buffer, offset)
+                self.encrypt_full_blocks(buffer, buf_start, full_word_count)
             else:
-                self.decrypt_fixed_word_array(self.key, buffer, offset)
+                self.decrypt_full_blocks(buffer, buf_start, full_word_count)
 
         if left_over == 0:
             return
@@ -59,128 +63,148 @@ class XXTEA:
 
         buffer[leftover_start:leftover_start + left_over] = remaining
 
-    @staticmethod
-    def encrypt_words(n: int, key: List[int], data: bytearray, offset: int) -> None:
-        v = [struct.unpack_from('<I', data, offset + i * 4)[0] for i in range(n)]
+    def encrypt_full_blocks(self, buffer: bytearray, buf_start: int, full_word_count: int) -> None:
+        for i in range(full_word_count):
+            offset = buf_start + i * MAX_BYTES
+            self.encrypt_fixed_word_array(self.key, buffer, offset)
 
-        rounds = 6 + 52 // n
-        sum_val = 0
+    def decrypt_full_blocks(self, buffer: bytearray, buf_start: int, full_word_count: int) -> None:
+        for i in range(full_word_count):
+            offset = buf_start + i * MAX_BYTES
+            self.decrypt_fixed_word_array(self.key, buffer, offset)
+
+    @staticmethod
+    def encrypt_words(n: int, key: np.ndarray, data: bytearray, offset: int) -> None:
+        v = np.frombuffer(data[offset:offset + n*4], dtype=np.uint32).copy()
+        v = _encrypt_block(v, key, n)
+        data[offset:offset + n*4] = v.tobytes()
+
+    @staticmethod
+    def decrypt_words(n: int, key: np.ndarray, data: bytearray, offset: int) -> None:
+        v = np.frombuffer(data[offset:offset + n*4], dtype=np.uint32).copy()
+        v = _decrypt_block(v, key, n)
+        data[offset:offset + n*4] = v.tobytes()
+
+    @staticmethod
+    def encrypt_fixed_word_array(key: np.ndarray, data: bytearray, offset: int) -> None:
+        if len(data) - offset < MAX_BYTES:
+            return
+
+        v = np.frombuffer(data[offset:offset + MAX_BYTES], dtype=np.uint32).copy()
+        v = _encrypt_block_fixed(v, key)
+        data[offset:offset + MAX_BYTES] = v.tobytes()
+
+    @staticmethod
+    def decrypt_fixed_word_array(key: np.ndarray, data: bytearray, offset: int) -> None:
+        if len(data) - offset < MAX_BYTES:
+            return
+
+        v = np.frombuffer(data[offset:offset + MAX_BYTES], dtype=np.uint32).copy()
+        v = _decrypt_block_fixed(v, key)
+        data[offset:offset + MAX_BYTES] = v.tobytes()
+
+@njit(cache=True, inline='always')
+def _mx(y: int, z: int, sum_val: int, key_val: int) -> int:
+    """The MX function used in XXTEA algorithm"""
+    return ((((z >> 5) ^ (y << 2)) + ((y >> 3) ^ (z << 4))) ^ 
+            ((sum_val ^ y) + (key_val ^ z))) & 0xFFFFFFFF
+
+@njit(cache=True)
+def _encrypt_block(v: np.ndarray, key: np.ndarray, n: int) -> np.ndarray:
+    """JIT-compiled encryption logic for variable-size blocks"""
+    rounds = 6 + 52 // n
+    sum_val = np.uint32(0)
+    z = v[n - 1]
+
+    for _ in range(rounds):
+        sum_val = (sum_val + TEA_DELTA) & 0xFFFFFFFF
+        e = (sum_val >> 2) & 3
+
+        for p in range(n - 1):
+            y = v[p + 1]
+            mx_val = _mx(y, z, sum_val, key[(p & 3) ^ e])
+            v[p] = (v[p] + mx_val) & 0xFFFFFFFF
+            z = v[p]
+
+        y = v[0]
+        mx_val = _mx(y, z, sum_val, key[((n - 1) & 3) ^ e])
+        v[n - 1] = (v[n - 1] + mx_val) & 0xFFFFFFFF
         z = v[n - 1]
 
-        while rounds > 0:
-            sum_val = (sum_val + TEA_DELTA) & 0xFFFFFFFF
-            e = (sum_val >> 2) & 3
+    return v
 
-            # Pre-fetch all 4 possible keys for this round
-            keys_e = [key[i ^ e] for i in range(4)]
+@njit(cache=True)
+def _decrypt_block(v: np.ndarray, key: np.ndarray, n: int) -> np.ndarray:
+    """JIT-compiled decryption logic for variable-size blocks"""
+    rounds = 6 + 52 // n
+    sum_val = (rounds * TEA_DELTA) & 0xFFFFFFFF
+    y = v[0]
 
-            for p in range(n - 1):
-                y = v[p + 1]
-                v[p] = (v[p] + XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
-                z = v[p]
+    while sum_val != 0:
+        e = (sum_val >> 2) & 3
 
-            y = v[0]
-            p = n - 1
-            v[n - 1] = (v[n - 1] + XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
-            z = v[n - 1]
-            rounds -= 1
+        for p in range(n - 1, 0, -1):
+            z = v[p - 1]
+            mx_val = _mx(y, z, sum_val, key[(p & 3) ^ e])
+            v[p] = (v[p] - mx_val) & 0xFFFFFFFF
+            y = v[p]
 
-        # Batch write all values
-        for i in range(n):
-            struct.pack_into('<I', data, offset + i * 4, v[i])
-
-    @staticmethod
-    def decrypt_words(n: int, key: List[int], data: bytearray, offset: int) -> None:
-        v = [struct.unpack_from('<I', data, offset + i * 4)[0] for i in range(n)]
-
-        rounds = 6 + 52 // n
-        sum_val = (rounds * TEA_DELTA) & 0xFFFFFFFF
+        z = v[n - 1]
+        mx_val = _mx(y, z, sum_val, key[0 ^ e])
+        v[0] = (v[0] - mx_val) & 0xFFFFFFFF
         y = v[0]
 
-        while True:
-            e = (sum_val >> 2) & 3
-            keys_e = [key[i ^ e] for i in range(4)]
+        sum_val = (sum_val - TEA_DELTA) & 0xFFFFFFFF
 
-            for p in range(n - 1, 0, -1):
-                z = v[p - 1]
-                v[p] = (v[p] - XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
-                y = v[p]
+    return v
 
-            z = v[n - 1]
-            p = 0
-            v[0] = (v[0] - XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
-            y = v[0]
+@njit(cache=True)
+def _encrypt_block_fixed(v: np.ndarray, key: np.ndarray) -> np.ndarray:
+    """JIT-compiled encryption logic for fixed 16-word blocks"""
+    rounds = 6 + 52 // MAX_WORDS
+    sum_val = np.uint32(0)
+    z = v[MAX_WORDS - 1]
 
-            sum_val = (sum_val - TEA_DELTA) & 0xFFFFFFFF
-            if sum_val == 0:
-                break
+    for _ in range(rounds):
+        sum_val = (sum_val + TEA_DELTA) & 0xFFFFFFFF
+        e = (sum_val >> 2) & 3
 
-        for i in range(n):
-            struct.pack_into('<I', data, offset + i * 4, v[i])
+        # Process all elements
+        for p in range(MAX_WORDS - 1):
+            y = v[p + 1]
+            mx_val = _mx(y, z, sum_val, key[(p & 3) ^ e])
+            v[p] = (v[p] + mx_val) & 0xFFFFFFFF
+            z = v[p]
 
-    @staticmethod
-    def encrypt_fixed_word_array(key: List[int], data: bytearray, offset: int) -> None:
-        if len(data) - offset < MAX_BYTES:
-            return
-
-        v = [struct.unpack_from('<I', data, offset + i * 4)[0] for i in range(MAX_WORDS)]
-
-        rounds = 6 + 52 // MAX_WORDS
-        sum_val = 0
+        y = v[0]
+        mx_val = _mx(y, z, sum_val, key[((MAX_WORDS - 1) & 3) ^ e])
+        v[MAX_WORDS - 1] = (v[MAX_WORDS - 1] + mx_val) & 0xFFFFFFFF
         z = v[MAX_WORDS - 1]
 
-        while rounds > 0:
-            sum_val = (sum_val + TEA_DELTA) & 0xFFFFFFFF
-            e = (sum_val >> 2) & 3
-            keys_e = [key[i ^ e] for i in range(4)]
+    return v
 
-            for p in range(MAX_WORDS - 1):
-                y = v[p + 1]
-                v[p] = (v[p] + XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
-                z = v[p]
+@njit(cache=True)
+def _decrypt_block_fixed(v: np.ndarray, key: np.ndarray) -> np.ndarray:
+    """JIT-compiled decryption logic for fixed 16-word blocks"""
+    rounds = 6 + 52 // MAX_WORDS
+    sum_val = (rounds * TEA_DELTA) & 0xFFFFFFFF
+    y = v[0]
 
-            y = v[0]
-            p = MAX_WORDS - 1
-            v[MAX_WORDS - 1] = (v[MAX_WORDS - 1] + XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
-            z = v[MAX_WORDS - 1]
-            rounds -= 1
+    while sum_val != 0:
+        e = (sum_val >> 2) & 3
 
-        for i in range(MAX_WORDS):
-            struct.pack_into('<I', data, offset + i * 4, v[i])
+        # Process all elements
+        for p in range(MAX_WORDS - 1, 0, -1):
+            z = v[p - 1]
+            mx_val = _mx(y, z, sum_val, key[(p & 3) ^ e])
+            v[p] = (v[p] - mx_val) & 0xFFFFFFFF
+            y = v[p]
 
-    @staticmethod
-    def decrypt_fixed_word_array(key: List[int], data: bytearray, offset: int) -> None:
-        if len(data) - offset < MAX_BYTES:
-            return
-
-        v = [struct.unpack_from('<I', data, offset + i * 4)[0] for i in range(MAX_WORDS)]
-
-        rounds = 6 + 52 // MAX_WORDS
-        sum_val = (rounds * TEA_DELTA) & 0xFFFFFFFF
+        z = v[MAX_WORDS - 1]
+        mx_val = _mx(y, z, sum_val, key[0 ^ e])
+        v[0] = (v[0] - mx_val) & 0xFFFFFFFF
         y = v[0]
 
-        while True:
-            e = (sum_val >> 2) & 3
-            keys_e = [key[i ^ e] for i in range(4)]
+        sum_val = (sum_val - TEA_DELTA) & 0xFFFFFFFF
 
-            for p in range(MAX_WORDS - 1, 0, -1):
-                z = v[p - 1]
-                v[p] = (v[p] - XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
-                y = v[p]
-
-            z = v[MAX_WORDS - 1]
-            p = 0
-            v[0] = (v[0] - XXTEA.mx(y, z, sum_val, keys_e[p & 3])) & 0xFFFFFFFF
-            y = v[0]
-
-            sum_val = (sum_val - TEA_DELTA) & 0xFFFFFFFF
-            if sum_val == 0:
-                break
-
-        for i in range(MAX_WORDS):
-            struct.pack_into('<I', data, offset + i * 4, v[i])
-
-    @staticmethod
-    def mx(y: int, z: int, sum_val: int, key_val: int) -> int:
-        return ((((z >> 5) ^ (y << 2)) + ((y >> 3) ^ (z << 4))) ^ 
-                ((sum_val ^ y) + (key_val ^ z))) & 0xFFFFFFFF
+    return v

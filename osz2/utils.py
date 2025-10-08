@@ -8,6 +8,15 @@ import io
 def bytes_to_uint32_array(data: bytes) -> typing.List[int]:
     return [x[0] for x in struct.iter_unpack("<I", data)]
 
+def uint32_slice_to_byte_slice(u32s: typing.List[int]) -> typing.List[int]:
+    bytes_list = []
+    for u32 in u32s:
+        bytes_list.append(u32 & 0xFF)
+        bytes_list.append((u32 >> 8) & 0xFF)
+        bytes_list.append((u32 >> 16) & 0xFF)
+        bytes_list.append((u32 >> 24) & 0xFF)
+    return bytes_list
+
 def read_string(reader: io.BufferedReader) -> str:
     length = read_uleb128(reader)
     if length == 0:
