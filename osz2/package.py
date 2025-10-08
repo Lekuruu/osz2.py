@@ -1,9 +1,12 @@
 
 from typing import Dict, List
+
+from osz2.constants import KNOWN_PLAIN
 from .metadata import MetadataType
 from .keys import KeyType, Mapping as KeyMapping
 from .xxtea_reader import XXTEAReader
 from .file import File
+from .xtea import XTEA
 from .utils import *
 
 import hashlib
@@ -101,16 +104,12 @@ class Osz2Package:
         # Convert key to uint32 array for XXTEA
         key = bytes_to_uint32_array(self.key)
 
-        # TODO: Compare decrypted data to expected value
-        #       As far as I know, this is currently not possible, due to "knownPlain" not being accessible:
-        #       https://github.com/ppy/osu-stream/blob/master/osu!stream/Helpers/osu!common/MapPackage.cs#L26
-        #
-        # encrypted_magic = bytearray(reader.read(64))
-        # xtea = XTEA(key)
-        # xtea.decrypt(encrypted_magic, 0, 64)
+        # Verify encrypted magic
+        encrypted_magic = bytearray(reader.read(64))
+        xtea = XTEA(key)
+        xtea.decrypt(encrypted_magic, 0, 64)
 
-        # For now we just skip the random bytes
-        reader.seek(64, 1)
+        assert encrypted_magic == KNOWN_PLAIN, "Magic plain mismatch!"
 
         # Read encrypted i32 length
         length = struct.unpack("<I", reader.read(4))[0]
