@@ -1,13 +1,12 @@
 
 from osz2.xxtea_reader import XXTEAReader
-from osz2.xxtea import XXTEA
+from osz2.xtea import XTEA
 from typing import Dict, List
 
 from .types import MetadataType
 from .file import File
 from .utils import *
 
-import datetime
 import hashlib
 import struct
 import io
@@ -94,7 +93,13 @@ class Osz2Package:
             print(f"{name}: {id}")
 
     def read_files(self, reader: io.BufferedReader) -> None:
-        reader.seek(64, 1)
+        # Convert key to uint32 array for XTEA
+        key = bytes_to_uint32_array(self.key)
+        xtea = XTEA(key)
+
+        # Read and decrypt magic encrypted bytes
+        encrypted_magic = bytearray(reader.read(64))
+        xtea.decrypt(encrypted_magic, 0, 64)
 
         # Read encrypted i32 length
         length = struct.unpack("<I", reader.read(4))[0]
@@ -108,11 +113,9 @@ class Osz2Package:
         total_size = reader.seek(0, 2)
         reader.seek(file_offset, 0)
 
-        key = bytes_to_uint32_array(self.key)
-        xxtea_reader = XXTEAReader(io.BytesIO(file_info), key)
-
-        # Parse file info using xxtea stream and proceed to read file contents
-        self.parse_files(xxtea_reader, file_offset, total_size)
+        # Parse files using xxtea stream
+        with XXTEAReader(io.BytesIO(file_info), key) as xxtea_reader:
+            self.parse_files(xxtea_reader, file_offset, total_size)
 
     def parse_files(self, reader: XXTEAReader, file_offset: int, total_size: int) -> None:
         count = struct.unpack("<I", reader.read(4))[0]
