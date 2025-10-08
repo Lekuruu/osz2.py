@@ -151,6 +151,7 @@ class Osz2Package:
             self.files.append(file)
             curr_offset = next_offset
 
+        # After reading the file info, read the actual file contents
         for i in range(len(self.files)):
             length = struct.unpack("<I", reader.read(4))[0]
             self.files[i].content = reader.read(length)
