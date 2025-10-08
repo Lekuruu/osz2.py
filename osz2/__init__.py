@@ -11,3 +11,4 @@ from .file import File
 from .simple_cryptor import SimpleCryptor
 from .xxtea_reader import XXTEAReader
 from .xxtea import XXTEA
+from .xtea import XTEA

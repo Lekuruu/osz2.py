@@ -7,6 +7,8 @@ MAX_BYTES = MAX_WORDS * 4
 TEA_DELTA = 0x9E3779B9
 
 class XXTEA:
+    """XXTEA implements the Corrected Block TEA algorithm"""
+
     def __init__(self, key: bytes) -> None:
         self.cryptor = SimpleCryptor(key)
         self.key = key
