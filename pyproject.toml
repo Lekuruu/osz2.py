@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools >= 40.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "osz2"
+version = "1.0.3"
+authors = [
+    {name = "Lekuru", email = "contact@lekuru.xyz"}
+]
+description = "A python library for reading osz2 files"
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = ["osu", "osz2", "python", "bancho"]
+license = "MIT"
+dependencies = [
+    "numba",
+    "numpy",
+]
+
+[project.urls]
+Homepage = "https://github.com/Lekuruu/osz2.py"
+
+[tool.setuptools]
+packages = ["osz2"]
