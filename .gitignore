@@ -254,3 +254,6 @@ fabric.properties
 
 # Output folder for testing
 output/
+
+# Local testing script
+test_all.py
