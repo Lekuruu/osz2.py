@@ -2,7 +2,7 @@
 from typing import List
 
 class SimpleCryptor:
-    def __init__(self, key: bytes) -> None:
+    def __init__(self, key: List[int]) -> None:
         self.key = key
 
     def encrypt_bytes(self, buf: bytearray) -> None:

@@ -1,5 +1,6 @@
 
 from .simple_cryptor import SimpleCryptor
+from typing import List
 import struct
 
 MAX_WORDS = 16
@@ -9,7 +10,7 @@ TEA_DELTA = 0x9E3779B9
 class XXTEA:
     """XXTEA implements the Corrected Block TEA algorithm"""
 
-    def __init__(self, key: bytes) -> None:
+    def __init__(self, key: List[int]) -> None:
         self.cryptor = SimpleCryptor(key)
         self.key = key
         self.n = 0
