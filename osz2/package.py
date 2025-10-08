@@ -105,18 +105,26 @@ class Osz2Package:
         for i in range(0, 16, 2):
             length -= self.file_info_hash[i] | (self.file_info_hash[i+1] << 17)
 
-        file_info = reader.read()
+        file_info = reader.read(length)
+        file_data = reader.read()
         file_offset = reader.seek(0, 1)
         total_size = reader.seek(0, 2)
         reader.seek(file_offset, 0)
 
-        # Parse files using xxtea stream
-        with XXTEAReader(io.BytesIO(file_info), key) as xxtea_reader:
-            self.parse_files(xxtea_reader, file_offset, total_size)
+        # Combine file info and data for reading
+        file_reader = io.BytesIO(file_info + file_data)
 
-    def parse_files(self, reader: XXTEAReader, file_offset: int, total_size: int) -> None:
+        # Parse files using xxtea stream
+        with XXTEAReader(file_reader, key) as xxtea_reader:
+            self.parse_files(xxtea_reader, file_info, file_offset, total_size)
+
+    def parse_files(self, reader: XXTEAReader, file_info: bytes, file_offset: int, total_size: int) -> None:
         count = struct.unpack("<I", reader.read(4))[0]
         curr_offset = struct.unpack("<I", reader.read(4))[0]
+
+        # Verify file info hash
+        file_info_hash = compute_osz_hash(file_info, count*4, 0xd1)
+        assert file_info_hash == self.file_info_hash, f"File info hash mismatch, expected: {file_info_hash}, got: {self.file_info_hash}"
 
         for i in range(count):
             filename = read_string(reader)
