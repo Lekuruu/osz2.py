@@ -32,11 +32,32 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - uses: actions/cache@v4
+        id: depcache
+        with:
+          path: deps
+          key: requirements-pip-${{ matrix.python-version }}-${{ hashFiles('requirements.txt') }}
+
+      - name: Download dependencies
+        if: steps.depcache.outputs.cache-hit != 'true'
+        run: |
+          pip download --dest=deps -r requirements.txt
+
+      - name: Install dependencies
+        run: |
+          pip install -U --no-index --find-links=deps deps/*
+
       - name: Install distribution dependencies
         run: |
           rm -rf junit
           rm -rf deps
           pip install build
+        if: matrix.python-version == 3.11
+
+      - name: Create distribution package
+        run: |
+          echo "include requirements.txt" > MANIFEST.in
+          python -m build
         if: matrix.python-version == 3.11
 
       - name: Create distribution package
