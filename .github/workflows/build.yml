@@ -50,13 +50,13 @@ jobs:
       - name: Install distribution dependencies
         run: |
           rm -rf junit
-          rm -rf deps
           pip install build
         if: matrix.python-version == 3.11
 
       - name: Create distribution package
         run: |
           echo "include requirements.txt" > MANIFEST.in
+          pip install -r requirements.txt
           python -m build
         if: matrix.python-version == 3.11
 
