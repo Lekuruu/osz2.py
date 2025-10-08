@@ -9,7 +9,7 @@ osz2.py is a Python library for reading osz2 files. It's a direct port of the ex
 ## Installation
 
 ```bash
-pip install git+https://github.com/Lekuruu/osz2.py@main
+pip install osz2
 ```
 
 Or install from source:
