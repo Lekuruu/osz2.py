@@ -64,9 +64,13 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install dependencies
+      - name: Install build dependencies
         run: |
           pip install setuptools
+
+      - name: Install requirements
+        run: |
+          pip install -r requirements.txt
 
       - name: Create local build
         run: |
