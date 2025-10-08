@@ -64,14 +64,40 @@ class XXTEA:
         buffer[leftover_start:leftover_start + left_over] = remaining
 
     def encrypt_full_blocks(self, buffer: bytearray, buf_start: int, full_word_count: int) -> None:
+        # Use parallel processing for multiple blocks
+        if full_word_count >= 4:
+            self.encrypt_full_blocks_parallel(buffer, buf_start, full_word_count)
+            return
+
+        # Sequential for small data
         for i in range(full_word_count):
             offset = buf_start + i * MAX_BYTES
             self.encrypt_fixed_word_array(self.key, buffer, offset)
 
     def decrypt_full_blocks(self, buffer: bytearray, buf_start: int, full_word_count: int) -> None:
+        # Use parallel processing for multiple blocks
+        if full_word_count >= 4:
+            self.decrypt_full_blocks_parallel(buffer, buf_start, full_word_count)
+            return
+
+        # Sequential for small data
         for i in range(full_word_count):
             offset = buf_start + i * MAX_BYTES
             self.decrypt_fixed_word_array(self.key, buffer, offset)
+
+    def encrypt_full_blocks_parallel(self, buffer: bytearray, buf_start: int, full_word_count: int) -> None:
+        # Convert buffer slice to numpy array for parallel processing
+        buffer_size = full_word_count * MAX_BYTES
+        data = np.frombuffer(buffer[buf_start:buf_start + buffer_size], dtype=np.uint32).copy()
+        data = _encrypt_blocks_parallel(data, self.key, full_word_count)
+        buffer[buf_start:buf_start + buffer_size] = data.tobytes()
+
+    def decrypt_full_blocks_parallel(self, buffer: bytearray, buf_start: int, full_word_count: int) -> None:
+        # Convert buffer slice to numpy array for parallel processing
+        buffer_size = full_word_count * MAX_BYTES
+        data = np.frombuffer(buffer[buf_start:buf_start + buffer_size], dtype=np.uint32).copy()
+        data = _decrypt_blocks_parallel(data, self.key, full_word_count)
+        buffer[buf_start:buf_start + buffer_size] = data.tobytes()
 
     @staticmethod
     def encrypt_words(n: int, key: np.ndarray, data: bytearray, offset: int) -> None:
@@ -208,3 +234,37 @@ def _decrypt_block_fixed(v: np.ndarray, key: np.ndarray) -> np.ndarray:
         sum_val = (sum_val - TEA_DELTA) & 0xFFFFFFFF
 
     return v
+
+@njit(cache=True, parallel=True)
+def _encrypt_blocks_parallel(data: np.ndarray, key: np.ndarray, block_count: int) -> np.ndarray:
+    # Process blocks in parallel using prange
+    for i in prange(block_count):
+        # Extract block
+        block_start = i * MAX_WORDS
+        block_end = block_start + MAX_WORDS
+        v = data[block_start:block_end].copy()
+        
+        # Encrypt block
+        v = _encrypt_block_fixed(v, key)
+        
+        # Write back
+        data[block_start:block_end] = v
+    
+    return data
+
+@njit(cache=True, parallel=True)
+def _decrypt_blocks_parallel(data: np.ndarray, key: np.ndarray, block_count: int) -> np.ndarray:
+    # Process blocks in parallel using prange
+    for i in prange(block_count):
+        # Extract block
+        block_start = i * MAX_WORDS
+        block_end = block_start + MAX_WORDS
+        v = data[block_start:block_end].copy()
+        
+        # Decrypt block
+        v = _decrypt_block_fixed(v, key)
+        
+        # Write back
+        data[block_start:block_end] = v
+    
+    return data
