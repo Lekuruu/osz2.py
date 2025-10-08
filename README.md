@@ -4,7 +4,7 @@
 [![GitHub License](https://img.shields.io/github/license/Lekuruu/osz2.py)](https://github.com/Lekuruu/osz2.py/blob/main/LICENSE)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Lekuruu/osz2.py/.github%2Fworkflows%2Fbuild.yml)](https://github.com/Lekuruu/osz2.py/actions/workflows/build.yml)
 
-osz2.py is a Python library for reading osz2 files. It's a direct port of the existing [Osz2Decryptor](https://github.com/xxCherry/Osz2Decryptor) project by [xxCherry](https://github.com/xxCherry) and [osz2-go](https://github.com/Lekuruu/osz2-go) by me. The Python port itself was done by [@ascenttree](https://github.com/ascenttree); all credit goes to them.
+osz2.py is a Python library for reading osz2 files. It's a direct port of the existing [Osz2Decryptor](https://github.com/xxCherry/Osz2Decryptor) project by [xxCherry](https://github.com/xxCherry) and [osz2-go](https://github.com/Lekuruu/osz2-go) by me. The Python port itself was done by [@ascenttree](https://github.com/ascenttree); all credit goes to them. I took part in code refactoring and optimizing the performance using [Numba](https://numba.pydata.org/) and [NumPy](https://numpy.org/), such that the encryption only takes ~0.150 seconds instead of 25 seconds.
 
 ## Installation
 
