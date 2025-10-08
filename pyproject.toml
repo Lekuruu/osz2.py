@@ -6,7 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "osz2"
 version = "1.0.4"
 authors = [
-    {name = "Lekuru", email = "contact@lekuru.xyz"}
+    {name = "Lekuru", email = "contact@lekuru.xyz"},
+    {name = "ascenttree"}
 ]
 description = "A python library for reading osz2 files"
 readme = "README.md"
