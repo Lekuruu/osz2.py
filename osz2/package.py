@@ -97,6 +97,7 @@ class Osz2Package:
         # Read and decrypt magic encrypted bytes
         encrypted_magic = bytearray(reader.read(64))
         xtea.decrypt(encrypted_magic, 0, 64)
+        # TODO: Compare decrypted stuff to expected value, where ever that is found
 
         # Read encrypted i32 length
         length = struct.unpack("<I", reader.read(4))[0]
