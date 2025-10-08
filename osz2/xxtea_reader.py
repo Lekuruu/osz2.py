@@ -8,6 +8,12 @@ class XXTEAReader:
         self.reader: BytesIO = reader
         self.xxtea: XXTEA = XXTEA(key)
 
+    def __enter__(self) -> "XXTEAReader":
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        self.reader.close()
+
     def read(self, n: int) -> bytes:
         read = bytearray(self.reader.read(n))
         self.xxtea.decrypt(read, 0, n)
