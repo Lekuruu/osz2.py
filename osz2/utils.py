@@ -21,7 +21,7 @@ def read_uleb128(reader: io.BufferedReader) -> int:
 
     while True:
         b = reader.read(1)
-        result |= b[0]&0x7F << shift
+        result |= (b[0]&0x7F) << shift
         if b[0]&0x80 == 0:
             break
         shift += 7
