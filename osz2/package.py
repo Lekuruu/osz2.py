@@ -79,7 +79,7 @@ class Osz2Package:
             buffer += write_string(meta_value)
 
         hash = compute_osz_hash(buffer, count*3, 0xA7)
-        assert hash == self.metadata_hash, f"Hash mismatch, expected: {hash}, got: {self.metadata_hash}"
+        assert hash == self.metadata_hash, f"Metadata hash mismatch, expected: {hash}, got: {self.metadata_hash}"
 
     def read_file_names(self, reader: io.BufferedReader) -> None:
         buffer = reader.read(4)
