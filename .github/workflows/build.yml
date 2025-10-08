@@ -49,7 +49,7 @@ jobs:
 
       - name: Run test script
         run: |
-          python cli.py "./tests/Karoo13 - Tic Tac Toe.osz2" "./output"
+          python osz2 "./tests/Karoo13 - Tic Tac Toe.osz2" "./output"
 
   build:
     runs-on: ubuntu-latest
