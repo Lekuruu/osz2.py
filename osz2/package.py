@@ -89,9 +89,6 @@ class Osz2Package:
             beatmap_id = struct.unpack("<I", reader.read(4))[0]
             self.filenames[filename] = beatmap_id
 
-        for name, id in self.filenames.items():
-            print(f"{name}: {id}")
-
     def read_files(self, reader: io.BufferedReader) -> None:
         # Convert key to uint32 array for XTEA
         key = bytes_to_uint32_array(self.key)
