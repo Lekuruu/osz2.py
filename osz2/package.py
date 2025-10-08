@@ -140,16 +140,11 @@ class Osz2Package:
             date_created = datetime_from_binary(date_created_binary)
             date_modified = datetime_from_binary(date_modified_binary)
 
-            next_offset = 0
+            next_offset = total_size - file_offset
             if count > i + 1:
                 next_offset = struct.unpack("<I", reader.read(4))[0]
-            else:
-                # This is the last file, so we calculate size differently
-                # using total file size minus file offset
-                next_offset = total_size - file_offset
 
             file_length = next_offset - curr_offset
-
             file = File(
                 filename,
                 curr_offset,

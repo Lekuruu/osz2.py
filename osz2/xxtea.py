@@ -243,13 +243,13 @@ def _encrypt_blocks_parallel(data: np.ndarray, key: np.ndarray, block_count: int
         block_start = i * MAX_WORDS
         block_end = block_start + MAX_WORDS
         v = data[block_start:block_end].copy()
-        
+
         # Encrypt block
         v = _encrypt_block_fixed(v, key)
-        
+
         # Write back
         data[block_start:block_end] = v
-    
+
     return data
 
 @njit(cache=True, parallel=True)
@@ -260,11 +260,11 @@ def _decrypt_blocks_parallel(data: np.ndarray, key: np.ndarray, block_count: int
         block_start = i * MAX_WORDS
         block_end = block_start + MAX_WORDS
         v = data[block_start:block_end].copy()
-        
+
         # Decrypt block
         v = _decrypt_block_fixed(v, key)
-        
+
         # Write back
         data[block_start:block_end] = v
-    
+
     return data
