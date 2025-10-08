@@ -4,8 +4,8 @@ __email__ = "contact@lekuru.xyz"
 __version__ = "1.0.3"
 __license__ = "MIT"
 
+from .metadata import MetadataType
 from .package import Osz2Package
-from .types import MetadataType
 from .file import File
 
 from .simple_cryptor import SimpleCryptor

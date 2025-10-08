@@ -3,7 +3,7 @@ from osz2.xxtea_reader import XXTEAReader
 from osz2.xtea import XTEA
 from typing import Dict, List
 
-from .types import MetadataType
+from .metadata import MetadataType
 from .file import File
 from .utils import *
 
