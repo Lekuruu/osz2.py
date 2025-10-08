@@ -11,8 +11,7 @@ def decrypt_osz2(filepath: str) -> Osz2Package:
         print(f"Error: Input file does not exist: {filepath}", file=sys.stderr)
 
     print("Reading osz2 package...")
-    package = Osz2Package.from_file(filepath)
-    return package
+    return Osz2Package.from_file(filepath)
 
 def save_osz2(package: Osz2Package, output: str) -> None:
     Path(output).mkdir(exist_ok=True)

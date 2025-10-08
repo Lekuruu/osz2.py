@@ -25,7 +25,7 @@ pip install -e .
 This repository provides a command-line interface for easy testing:
 
 ```bash
-python cli.py <input.osz2> <output_directory>
+python -m osz2 <input.osz2> <output_directory>
 ```
 
 But that's not all!  
