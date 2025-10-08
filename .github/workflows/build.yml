@@ -60,12 +60,6 @@ jobs:
           python -m build
         if: matrix.python-version == 3.11
 
-      - name: Create distribution package
-        run: |
-          echo "include requirements.txt" > MANIFEST.in
-          python -m build
-        if: matrix.python-version == 3.11
-
       - name: Upload distribution package
         uses: actions/upload-artifact@v4
         with:
