@@ -55,17 +55,22 @@ def write_uleb128(value: int) -> bytes:
     return bytes(buf)
 
 def compute_osz_hash(buffer: bytes, pos: int, swap: int) -> bytes:
-    buf = buffer
-    if pos >= 0 and pos < len(buffer):
-        buf = bytearray(buffer)
+    buf = bytearray(buffer)
+
+    if pos < 0 or pos >= len(buf):
+        # If pos is out of bounds, just compute hash without swapping
+        hash_bytes = bytearray(hashlib.md5(buf).digest())
+    else:
         buf[pos] ^= swap
+        hash_bytes = bytearray(hashlib.md5(buf).digest())
+        buf[pos] ^= swap # restore original
 
-    hash = bytearray(hashlib.md5(buf).digest())
+    # Swap bytes as in C# implementation
     for i in range(8):
-        hash[i], hash[i+8] = hash[i+8], hash[i]
+        hash_bytes[i], hash_bytes[i+8] = hash_bytes[i+8], hash_bytes[i]
 
-    hash[5] ^= 0x2D
-    return bytes(hash)
+    hash_bytes[5] ^= 0x2D
+    return bytes(hash_bytes)
 
 def datetime_from_binary(time: int) -> datetime.datetime:
     n_ticks = time & 0x3FFFFFFFFFFFFFFF
