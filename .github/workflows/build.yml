@@ -74,7 +74,7 @@ jobs:
 
       - name: Create local build
         run: |
-          python setup.py build
+          python -m build --sdist
 
       - name: Upload distribution folder
         uses: actions/upload-artifact@v4
