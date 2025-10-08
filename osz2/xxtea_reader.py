@@ -8,6 +8,10 @@ class XXTEAReader:
         self.reader: BytesIO = reader
         self.xxtea: XXTEA = XXTEA(key)
 
+    @property
+    def encrypted_data(self) -> bytes:
+        return self.reader.getvalue()
+
     def __enter__(self) -> "XXTEAReader":
         return self
 
