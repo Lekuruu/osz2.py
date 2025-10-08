@@ -98,12 +98,12 @@ class Osz2Package:
 
         # Read encrypted i32 length
         length = struct.unpack("<I", reader.read(4))[0]
-        
+
         # Decode length by encrypted length
         for i in range(0, 16, 2):
             length -= self.file_info_hash[i] | (self.file_info_hash[i+1] << 17)
 
-        file_info = reader.read(length)
+        file_info = reader.read()
         file_offset = reader.seek(0, 1)
         total_size = reader.seek(0, 2)
         reader.seek(file_offset, 0)
@@ -112,10 +112,9 @@ class Osz2Package:
         xxtea_reader = XXTEAReader(io.BytesIO(file_info), key)
 
         # Parse file info using xxtea stream and proceed to read file contents
-        self.parse_file_infos(xxtea_reader, file_offset, total_size)
-        self.parse_file_content(reader, key)
+        self.parse_files(xxtea_reader, file_offset, total_size)
 
-    def parse_file_infos(self, reader: XXTEAReader, file_offset: int, total_size: int) -> None:
+    def parse_files(self, reader: XXTEAReader, file_offset: int, total_size: int) -> None:
         count = struct.unpack("<I", reader.read(4))[0]
         curr_offset = struct.unpack("<I", reader.read(4))[0]
 
@@ -152,14 +151,7 @@ class Osz2Package:
             self.files.append(file)
             curr_offset = next_offset
 
-    def parse_file_content(self, reader: io.BufferedReader, key: list[int]) -> None:
-        xxtea = XXTEA(key)
-
+        # After reading the file info, read the actual file contents
         for i in range(len(self.files)):
-            length = bytearray(reader.read(4))
-            xxtea.decrypt(length, 0, 4)
-            length = struct.unpack("<I", length)[0]
-
-            content = bytearray(reader.read(length))
-            xxtea.decrypt(content, 0, length)
-            self.files[i].content = bytes(content)
+            length = struct.unpack("<I", reader.read(4))[0]
+            self.files[i].content = reader.read(length)
