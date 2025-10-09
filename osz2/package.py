@@ -1,5 +1,5 @@
 
-from typing import Dict, List
+from typing import Dict, List, Iterable
 from .keys import KeyType, Mapping as KeyMapping
 from .xxtea_reader import XXTEAReader
 from .constants import KNOWN_PLAIN
@@ -36,6 +36,16 @@ class Osz2Package:
             # Read the files if requested
             self.read_files(reader)
 
+    @classmethod
+    def from_file(cls, path: str, metadata_only=False, key_type=KeyType.OSZ2) -> "Osz2Package":
+        with open(path, "rb") as f:
+            return cls(f, metadata_only, key_type)
+
+    @classmethod
+    def from_bytes(cls, data: bytes, metadata_only=False, key_type=KeyType.OSZ2) -> "Osz2Package":
+        with io.BytesIO(data) as f:
+            return cls(f, metadata_only, key_type)
+
     @property
     def osz_filename(self) -> str:
         return sanitize_filename(
@@ -46,21 +56,10 @@ class Osz2Package:
         ).strip()  + '.osz'
 
     @property
-    def beatmap_files(self) -> List[File]:
-        return [
-            file for file in self.files
-            if file.filename.endswith(".osu")
-        ]
-
-    @classmethod
-    def from_file(cls, path: str, metadata_only=False, key_type=KeyType.OSZ2) -> "Osz2Package":
-        with open(path, "rb") as f:
-            return cls(f, metadata_only, key_type)
-
-    @classmethod
-    def from_bytes(cls, data: bytes, metadata_only=False, key_type=KeyType.OSZ2) -> "Osz2Package":
-        with io.BytesIO(data) as f:
-            return cls(f, metadata_only, key_type)
+    def beatmap_files(self) -> Iterable[File]:
+        for file in self.files:
+            if file.filename.endswith(".osu"):
+                yield file
 
     def create_osz_package(self, compression=zipfile.ZIP_DEFLATED) -> bytes:
         """Create a regular .osz package from the current files"""
