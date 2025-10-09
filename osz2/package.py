@@ -1,6 +1,5 @@
 
 from typing import Dict, List
-
 from .keys import KeyType, Mapping as KeyMapping
 from .xxtea_reader import XXTEAReader
 from .constants import KNOWN_PLAIN
@@ -123,50 +122,45 @@ class Osz2Package:
         total_size = reader.seek(0, 2)
         reader.seek(file_offset, 0)
 
-        # Combine file info and data for reading
-        file_reader = io.BytesIO(file_info + file_data)
+        # Parse file infos using xxtea stream
+        with XXTEAReader(io.BytesIO(file_info), key) as xxtea:
+            count = struct.unpack("<I", xxtea.read(4))[0]
+            curr_offset = struct.unpack("<I", xxtea.read(4))[0]
 
-        # Parse files using xxtea stream
-        with XXTEAReader(file_reader, key) as xxtea_reader:
-            self.parse_files(xxtea_reader, file_info, file_offset, total_size)
+            # Verify file info hash
+            file_info_hash = compute_osz_hash(file_info, count*4, 0xd1)
+            assert file_info_hash == self.file_info_hash, f"File info hash mismatch, expected: {file_info_hash}, got: {self.file_info_hash}"
 
-    def parse_files(self, reader: XXTEAReader, file_info: bytes, file_offset: int, total_size: int) -> None:
-        count = struct.unpack("<I", reader.read(4))[0]
-        curr_offset = struct.unpack("<I", reader.read(4))[0]
+            for i in range(count):
+                filename = read_string(xxtea)
+                file_hash = xxtea.read(16)
 
-        # Verify file info hash
-        file_info_hash = compute_osz_hash(file_info, count*4, 0xd1)
-        assert file_info_hash == self.file_info_hash, f"File info hash mismatch, expected: {file_info_hash}, got: {self.file_info_hash}"
+                date_created_binary = struct.unpack("<Q", xxtea.read(8))[0]
+                date_modified_binary = struct.unpack("<Q", xxtea.read(8))[0]
 
-        for i in range(count):
-            filename = read_string(reader)
-            file_hash = reader.read(16)
+                # Convert from .NET DateTime.ToBinary() format
+                date_created = datetime_from_binary(date_created_binary)
+                date_modified = datetime_from_binary(date_modified_binary)
 
-            date_created_binary = struct.unpack("<Q", reader.read(8))[0]
-            date_modified_binary = struct.unpack("<Q", reader.read(8))[0]
+                next_offset = total_size - file_offset
+                if count > i + 1:
+                    next_offset = struct.unpack("<I", xxtea.read(4))[0]
 
-            # Convert from .NET DateTime.ToBinary() format
-            date_created = datetime_from_binary(date_created_binary)
-            date_modified = datetime_from_binary(date_modified_binary)
-
-            next_offset = total_size - file_offset
-            if count > i + 1:
-                next_offset = struct.unpack("<I", reader.read(4))[0]
-
-            file_length = next_offset - curr_offset
-            file = File(
-                filename,
-                curr_offset,
-                file_length,
-                file_hash,
-                date_created,
-                date_modified,
-                content=bytes(),
-            )
-            self.files.append(file)
-            curr_offset = next_offset
+                file_length = next_offset - curr_offset
+                file = File(
+                    filename,
+                    curr_offset,
+                    file_length,
+                    file_hash,
+                    date_created,
+                    date_modified,
+                    content=bytes(),
+                )
+                self.files.append(file)
+                curr_offset = next_offset
 
         # After reading the file info, read the actual file contents
-        for i in range(len(self.files)):
-            length = struct.unpack("<I", reader.read(4))[0]
-            self.files[i].content = reader.read(length)
+        with XXTEAReader(io.BytesIO(file_data), key) as xxtea:
+            for i in range(len(self.files)):
+                length = struct.unpack("<I", xxtea.read(4))[0]
+                self.files[i].content = xxtea.read(length)
