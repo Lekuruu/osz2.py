@@ -47,6 +47,12 @@ class Osz2Package:
             return cls(f, metadata_only, key_type)
 
     @property
+    def beatmap_files(self) -> Iterable[File]:
+        for file in self.files:
+            if file.is_beatmap:
+                yield file
+
+    @property
     def osz_filename(self) -> str:
         return sanitize_filename(
             f'{self.metadata.get(MetadataType.BeatmapSetID, "")} '
@@ -55,11 +61,9 @@ class Osz2Package:
             f'({self.metadata.get(MetadataType.Creator, "Unknown")})'
         ).strip()  + '.osz'
 
-    @property
-    def beatmap_files(self) -> Iterable[File]:
-        for file in self.files:
-            if file.is_beatmap:
-                yield file
+    def find_file_by_name(self, name: str) -> File | None:
+        """Get a file by its filename"""
+        return next((file for file in self.files if file.filename == name), None)
 
     def create_osz_package(
         self,
