@@ -41,7 +41,7 @@ def main() -> None:
     save_osz2(osz2, args.output)
 
     if args.create_osz:
-        osz_data = osz2.create_osz_package()
+        osz_data = osz2.create_osz_package(exclude_disallowed_files=False)
 
         with open(f"{args.output}/{osz2.osz_filename}", "wb") as f:
             f.write(osz_data)
