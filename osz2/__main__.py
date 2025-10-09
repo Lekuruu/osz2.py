@@ -33,11 +33,18 @@ def main() -> None:
     parser.add_argument("input", help="The path to the osz2 file to decrypt (required)")
     parser.add_argument("output", help="The path to put the extracted osz2 files (required)")
     parser.add_argument("--key-type", choices=["osz2", "osf2"], default="osz2", help="The key generation method to use (default: osz2)")
+    parser.add_argument("--create-osz", action="store_true", help="Create a regular .osz package from the decrypted files")
     args = parser.parse_args()
     key_type = KeyType(args.key_type)
 
     osz2 = decrypt_osz2(args.input, key_type)
     save_osz2(osz2, args.output)
+
+    if args.create_osz:
+        osz_data = osz2.create_osz_package()
+
+        with open(f"{args.output}/{osz2.osz_filename}", "wb") as f:
+            f.write(osz_data)
 
 if __name__ == "__main__":
     main()
