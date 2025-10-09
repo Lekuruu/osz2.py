@@ -87,6 +87,8 @@ with open("beatmap.osz2", "rb") as f:
 
 ### Applying a patch
 
+When developing an implementation of the beatmap submission system, this could come in handy:
+
 ```python
 # Assuming you have a source osz2 file and a patch file
 osz2_file = b"..."
@@ -94,4 +96,18 @@ patch_file = b"..."
 
 updated_osz2 = osz2.apply_bsdiff_patch(osz2_file, patch_file)
 osz2 = Osz2Package.from_bytes(updated_osz2)
+```
+
+### Using osu!stream .osf2 files
+
+I have not tested this, but in theory this should work by passing in `KeyType.OSF2` when initializing the osz2 package:
+
+```python
+osf2 = Osz2Package.from_file("beatmap.osf2", key_type=KeyType.OSF2)
+```
+
+You can also specify this when using the command-line interface:
+
+```bash
+python -m osz2 <input.osz2> <output_directory> --key-type osf2
 ```
