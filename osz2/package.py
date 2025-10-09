@@ -58,7 +58,7 @@ class Osz2Package:
     @property
     def beatmap_files(self) -> Iterable[File]:
         for file in self.files:
-            if file.filename.endswith(".osu"):
+            if file.is_beatmap:
                 yield file
 
     def create_osz_package(self, compression=zipfile.ZIP_DEFLATED) -> bytes:
