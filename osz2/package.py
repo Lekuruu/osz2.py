@@ -1,5 +1,5 @@
 
-from typing import Dict, List, Iterable
+from typing import Dict, List, Iterable, Optional
 from .keys import KeyType, Mapping as KeyMapping
 from .xxtea_reader import XXTEAReader
 from .constants import KNOWN_PLAIN
@@ -61,7 +61,7 @@ class Osz2Package:
             f'({self.metadata.get(MetadataType.Creator, "Unknown")})'
         ).strip()  + '.osz'
 
-    def find_file_by_name(self, name: str) -> File | None:
+    def find_file_by_name(self, name: str) -> Optional[File]:
         """Get a file by its filename"""
         return next((file for file in self.files if file.filename == name), None)
 
