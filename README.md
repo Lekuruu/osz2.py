@@ -54,6 +54,10 @@ for file in package.files:
 
     with open(file.filename, "wb") as f:
         f.write(file.content)
+
+# Create a regular .osz package
+with open("beatmap.osz", "wb") as f:
+    f.write(package.create_osz_package())
 ```
 
 ### Metadata-only Mode
