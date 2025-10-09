@@ -68,8 +68,11 @@ class Osz2Package:
             osz = zipfile.ZipFile(buffer, 'w', compression)
 
             for file in self.files:
-                # TODO: Use ZipInfo to set file date(s)
-                osz.writestr(file.filename, file.content)
+                # Create ZipInfo to set file metadata
+                zip_info = zipfile.ZipInfo(filename=file.filename)
+                zip_info.compress_type = compression
+                zip_info.date_time = file.date_modified.timetuple()[:6]
+                osz.writestr(zip_info, file.content)
 
             osz.close()
             return buffer.getvalue()
