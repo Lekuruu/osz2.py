@@ -4,6 +4,7 @@ __email__ = "contact@lekuru.xyz"
 __version__ = "1.0.4"
 __license__ = "MIT"
 
+from .patch import apply_osz2_patch
 from .metadata import MetadataType
 from .package import Osz2Package
 from .keys import KeyType
