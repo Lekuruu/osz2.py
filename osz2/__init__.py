@@ -5,7 +5,6 @@ __version__ = "1.0.4"
 __license__ = "MIT"
 
 from .metadata import MetadataType
-from.constants import KNOWN_PLAIN
 from .package import Osz2Package
 from .keys import KeyType
 from .file import File
