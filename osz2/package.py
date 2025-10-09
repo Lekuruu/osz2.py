@@ -61,12 +61,20 @@ class Osz2Package:
             if file.is_beatmap:
                 yield file
 
-    def create_osz_package(self, compression=zipfile.ZIP_DEFLATED) -> bytes:
+    def create_osz_package(
+        self,
+        compression: int = zipfile.ZIP_DEFLATED,
+        exclude_disallowed_files: bool = True
+    ) -> bytes:
         """Create a regular .osz package from the current files"""
         with io.BytesIO() as buffer:
             osz = zipfile.ZipFile(buffer, 'w', compression)
 
             for file in self.files:
+                if exclude_disallowed_files and not file.is_allowed_extension:
+                    # See `constants.ALLOWED_FILE_EXTENSIONS` for allowed file extensions
+                    continue
+
                 # Create ZipInfo to set file metadata
                 zip_info = zipfile.ZipInfo(filename=file.filename)
                 zip_info.compress_type = compression
@@ -76,9 +84,13 @@ class Osz2Package:
             osz.close()
             return buffer.getvalue()
 
-    def calculate_osz_filesize(self, compression=zipfile.ZIP_DEFLATED) -> int:
+    def calculate_osz_filesize(
+        self,
+        compression: int = zipfile.ZIP_DEFLATED,
+        exclude_disallowed_files: bool = True
+    ) -> int:
         """Calculate the size of the .osz package if it were to be created"""
-        return len(self.create_osz_package(compression))
+        return len(self.create_osz_package(compression, exclude_disallowed_files))
 
     def read_header(self, reader: io.BufferedReader) -> None:
         magic = reader.read(3)
