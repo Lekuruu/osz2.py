@@ -84,3 +84,14 @@ with open("beatmap.osz2", "rb") as f:
 with open("beatmap.osz2", "rb") as f:
     package = Osz2Package(f)
 ```
+
+### Applying a patch
+
+```python
+# Assuming you have a source osz2 file and a patch file
+osz2_file = b"..."
+patch_file = b"..."
+
+updated_osz2 = osz2.apply_bsdiff_patch(osz2_file, patch_file)
+osz2 = Osz2Package.from_bytes(updated_osz2)
+```
