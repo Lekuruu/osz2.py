@@ -11,3 +11,12 @@ KNOWN_PLAIN = bytearray([
    0xFE, 0x96, 0xA6, 0x94, 0x99, 0xA7, 0x90, 0xE4,
    0x68, 0xBF, 0xC6, 0x97, 0x5B, 0x1B, 0x5E, 0x7F
 ])
+
+# A list of all allowed file extensions in an .osz package
+# Did not cause any issues when testing on titanic
+ALLOWED_FILE_EXTENSIONS = (
+    "osu", "osz", "osb", "osk", "png", "mp3",
+    "wav", "ogg", "jpg", "wmv", "flv", "flac",
+    "avi", "ini",  "m4v", "mpg", "mov", "webm",
+    "ogv", "mpeg", "3gp", "mkv", "mp4", "jpeg",
+)
