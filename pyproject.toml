@@ -17,6 +17,7 @@ license = "MIT"
 dependencies = [
     "numba",
     "numpy",
+    "bsdiff4"
 ]
 
 [project.urls]
