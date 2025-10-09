@@ -4,6 +4,12 @@ import hashlib
 import struct
 import typing
 import io
+import re
+
+unsafe_characters_pattern = re.compile(r'[<>:"/\\|?*\x00-\x1F]')
+
+def sanitize_filename(filename: str) -> str:
+    return re.sub(unsafe_characters_pattern, "", filename)
 
 def bytes_to_uint32_array(data: bytes) -> typing.List[int]:
     return [x[0] for x in struct.iter_unpack("<I", data)]

@@ -37,6 +37,15 @@ class Osz2Package:
             self.read_files(reader)
 
     @property
+    def osz_filename(self) -> str:
+        return sanitize_filename(
+            f'{self.metadata.get(MetadataType.BeatmapSetID, "")} '
+            f'{self.metadata.get(MetadataType.Artist, "Unknown")} - '
+            f'{self.metadata.get(MetadataType.Title, "Unknown")} '
+            f'({self.metadata.get(MetadataType.Creator, "Unknown")})'
+        ).strip()  + '.osz'
+
+    @property
     def beatmap_files(self) -> List[File]:
         return [
             file for file in self.files
