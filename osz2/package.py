@@ -8,7 +8,7 @@ from .file import File
 from .xtea import XTEA
 from .utils import *
 
-import hashlib
+import zipfile
 import struct
 import io
 
@@ -52,6 +52,22 @@ class Osz2Package:
     def from_bytes(cls, data: bytes, metadata_only=False, key_type=KeyType.OSZ2) -> "Osz2Package":
         with io.BytesIO(data) as f:
             return cls(f, metadata_only, key_type)
+
+    def create_osz_package(self, compression=zipfile.ZIP_DEFLATED) -> bytes:
+        """Create a regular .osz package from the current files"""
+        with io.BytesIO() as buffer:
+            osz = zipfile.ZipFile(buffer, 'w', compression)
+
+            for file in self.files:
+                # TODO: Use ZipInfo to set file date(s)
+                osz.writestr(file.filename, file.content)
+
+            osz.close()
+            return buffer.getvalue()
+
+    def calculate_osz_filesize(self, compression=zipfile.ZIP_DEFLATED) -> int:
+        """Calculate the size of the .osz package if it were to be created"""
+        return len(self.create_osz_package(compression))
 
     def read_header(self, reader: io.BufferedReader) -> None:
         magic = reader.read(3)
