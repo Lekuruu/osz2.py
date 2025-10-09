@@ -3,7 +3,7 @@ import bsdiff4
 import gzip
 import io
 
-def apply_osz2_patch(source_osz2: bytes, patch_bytes: bytes) -> bytes:
+def apply_bsdiff_patch(source_osz2: bytes, patch_bytes: bytes) -> bytes:
     """Apply a BSDIFF4-format patch to an osz2 package."""
     return bsdiff4.core.patch(
         source_osz2,
