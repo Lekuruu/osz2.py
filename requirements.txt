@@ -1,3 +1,2 @@
 bsdiff4
-numba
 numpy

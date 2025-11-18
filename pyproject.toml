@@ -15,16 +15,15 @@ requires-python = ">=3.9"
 keywords = ["osu", "osz2", "python", "bancho"]
 license = "MIT"
 dependencies = [
-    "numba",
     "numpy",
     "bsdiff4"
 ]
+
+[tool.setuptools]
+packages = ["osz2"]
 
 [project.urls]
 Homepage = "https://github.com/Lekuruu/osz2.py"
 
 [project.scripts]
 osz2 = "osz2.__main__:main"
-
-[tool.setuptools]
-packages = ["osz2"]
