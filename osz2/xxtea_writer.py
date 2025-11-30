@@ -1,6 +1,6 @@
 
-from osz2.utils import write_uleb128
-from osz2.xxtea import XXTEA
+from .utils import write_uleb128
+from .xxtea import XXTEA
 from typing import List
 from io import BytesIO
 
