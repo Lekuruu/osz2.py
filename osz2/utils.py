@@ -63,7 +63,6 @@ def write_uleb128(value: int) -> bytes:
             byte |= 0x80
 
         buf.append(byte)
-
         if value == 0:
             break
 
