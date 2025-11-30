@@ -14,10 +14,6 @@ class File:
     content: bytes
 
     @property
-    def is_beatmap(self) -> bool:
-        return self.filename.endswith('.osu')
-
-    @property
     def file_extension(self) -> str:
         return (
             self.filename.split('.')[-1].lower()
@@ -27,3 +23,7 @@ class File:
     @property
     def is_allowed_extension(self) -> bool:
         return self.file_extension in ALLOWED_FILE_EXTENSIONS
+
+    @property
+    def is_beatmap(self) -> bool:
+        return self.filename.endswith('.osu')
