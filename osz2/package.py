@@ -1,6 +1,5 @@
 
 from typing import Dict, List, Iterable, Optional
-from datetime import datetime
 
 from .keys import KeyType, Mapping as KeyMapping
 from .xxtea_writer import XXTEAWriter
@@ -68,8 +67,8 @@ class Osz2Package:
                     content = f.read()
 
                 stat = os.stat(filepath)
-                created = datetime.fromtimestamp(stat.st_ctime)
-                modified = datetime.fromtimestamp(stat.st_mtime)
+                created = datetime.datetime.fromtimestamp(stat.st_ctime)
+                modified = datetime.datetime.fromtimestamp(stat.st_mtime)
 
                 file = File(
                     filename=rel_path,
