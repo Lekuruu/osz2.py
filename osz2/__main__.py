@@ -9,6 +9,7 @@ import os
 def decrypt_osz2(filepath: str, key_type: KeyType) -> Osz2Package:
     if not os.path.exists(filepath):
         print(f"Error: Input file does not exist: {filepath}", file=sys.stderr)
+        sys.exit(1)
 
     print("Reading osz2 package...")
     return Osz2Package.from_file(filepath, key_type=key_type)
