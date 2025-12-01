@@ -175,7 +175,7 @@ def parse_beatmap(content: str) -> Tuple[int, Dict[str, dict]]:
 
     return beatmap_version, sections
 
-def parse_number(value: str) -> int | float:
+def parse_number(value: str) -> Optional[Union[int, float]]:
     for cast in (int, float):
         try:
             return cast(value.strip())
