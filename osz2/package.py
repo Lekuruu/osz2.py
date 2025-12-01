@@ -134,11 +134,12 @@ class Osz2Package:
         # Generate encryption key
         key_generator = KeyMapping[self.key_type]
         key = key_generator(self.metadata)
-        key_uint32 = bytes_to_uint32_array(key)
+        key_array = bytes_to_uint32_array(key)
+        self.key = key
 
         output = io.BytesIO()
         self._process_video_files()
-        self._write_package_contents(output, key_uint32)
+        self._write_package_contents(output, key_array)
         return output.getvalue()
 
     def create_osz_package(
