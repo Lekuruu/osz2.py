@@ -40,8 +40,8 @@ def main() -> None:
         if not args.create_osz:
             return
 
-        osz_data = osz2.create_osz_package(exclude_disallowed_files=False)
         with open(f"{args.output}/{osz2.osz_filename}", "wb") as f:
+            osz_data = osz2.create_osz_package(exclude_disallowed_files=False)
             f.write(osz_data)
 
     elif args.command == "encrypt":
