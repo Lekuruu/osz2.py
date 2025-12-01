@@ -95,13 +95,13 @@ class Osz2Package:
                 yield file
 
     @property
-    def osz_filename(self) -> str:
+    def osz_filename(self, extension: str = ".osz") -> str:
         return sanitize_filename(
             f'{self.metadata.get(MetadataType.BeatmapSetID, "")} '
             f'{self.metadata.get(MetadataType.Artist, "Unknown")} - '
             f'{self.metadata.get(MetadataType.Title, "Unknown")} '
             f'({self.metadata.get(MetadataType.Creator, "Unknown")})'
-        ).strip()  + '.osz'
+        ).strip() + extension
 
     def read(self, reader: io.BufferedReader, metadata_only: bool = False) -> None:
         """Read osz2 package data from a reader & apply it to this object"""
