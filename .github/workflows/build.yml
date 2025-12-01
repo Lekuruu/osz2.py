@@ -52,6 +52,14 @@ jobs:
         run: |
           pip install -e .
 
+      - name: Install mypy
+        run: |
+          pip install mypy
+
+      - name: Run mypy type checking
+        run: |
+          mypy osz2
+
       - name: Run decryption test
         run: |
           python osz2 decrypt "./tests/Karoo13 - Tic Tac Toe.osz2" "./output" --create-osz
