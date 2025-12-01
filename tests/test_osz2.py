@@ -11,7 +11,8 @@ import pytest
 import os
 
 TESTS_DIR = Path(__file__).parent
-OSZ2_FILES = list(TESTS_DIR.glob("*.osz2"))
+FILES_DIR = TESTS_DIR / "files"
+OSZ2_FILES = list(FILES_DIR.glob("*.osz2"))
 
 class TestOsz2Package:
     @pytest.fixture(params=OSZ2_FILES, ids=lambda p: p.stem)
