@@ -31,3 +31,9 @@ class File:
     @property
     def is_beatmap(self) -> bool:
         return self.filename.endswith('.osu')
+    
+    @property
+    def is_combined_beatmap(self) -> bool:
+        # NOTE: This is an osu!stream specific file format
+        # https://github.com/ppy/osu-stream/blob/master/BeatmapCombinator/Program.cs#L31
+        return self.filename.endswith('.osc')

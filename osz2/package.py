@@ -89,15 +89,21 @@ class Osz2Package:
         return package
 
     @property
+    def video_files(self) -> Iterable[File]:
+        for file in self.files:
+            if file.is_video:
+                yield file
+
+    @property
     def beatmap_files(self) -> Iterable[File]:
         for file in self.files:
             if file.is_beatmap:
                 yield file
 
     @property
-    def video_files(self) -> Iterable[File]:
+    def combined_beatmap_files(self) -> Iterable[File]:
         for file in self.files:
-            if file.is_video:
+            if file.is_combined_beatmap:
                 yield file
 
     @property
