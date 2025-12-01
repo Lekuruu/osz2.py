@@ -63,7 +63,6 @@ def write_uleb128(value: int) -> bytes:
             byte |= 0x80
 
         buf.append(byte)
-
         if value == 0:
             break
 
@@ -87,9 +86,32 @@ def compute_osz_hash(buffer: bytes, pos: int, swap: int) -> bytes:
     hash_bytes[5] ^= 0x2D
     return bytes(hash_bytes)
 
+def compute_body_hash(
+    data: bytes,
+    video_offset: typing.Optional[int] = None,
+    video_length: typing.Optional[int] = None
+) -> bytes:
+    to_hash = data
+    pos = len(data) // 2
+
+    if video_offset is not None and video_length is not None:
+        # Exclude video data from the hash calculation
+        before_video = data[:video_offset]
+        after_video = data[video_offset + video_length:]
+        to_hash = before_video + after_video
+        pos = len(to_hash) // 2
+
+    return compute_osz_hash(to_hash, pos, 0x9F)
+
 def datetime_from_binary(time: int) -> datetime.datetime:
     n_ticks = time & 0x3FFFFFFFFFFFFFFF
     secs = n_ticks / 1e7
     d1 = datetime.datetime(1, 1, 1)
     t1 = datetime.timedelta(seconds=secs)
     return d1 + t1
+
+def datetime_to_binary(dt: datetime.datetime) -> int:
+    d1 = datetime.datetime(1, 1, 1)
+    delta = dt - d1
+    ticks = int(delta.total_seconds() * 1e7)
+    return ticks & 0x3FFFFFFFFFFFFFFF

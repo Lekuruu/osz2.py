@@ -20,3 +20,10 @@ ALLOWED_FILE_EXTENSIONS = (
     "avi", "ini",  "m4v", "mpg", "mov", "webm",
     "ogv", "mpeg", "3gp", "mkv", "mp4", "jpeg",
 )
+
+# osu! officially only uses ".avi", ".flv" and ".mpg" for
+# video files, so lets hope this won't cause any issues
+VIDEO_FILE_EXTENSIONS = (
+    "wmv", "flv", "avi", "m4v", "mpg", "mov",
+    "webm", "ogv", "mpeg", "3gp", "mkv", "mp4",
+)
