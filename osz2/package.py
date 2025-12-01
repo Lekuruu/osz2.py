@@ -160,6 +160,11 @@ class Osz2Package:
                 zip_info = zipfile.ZipInfo(filename=file.filename)
                 zip_info.compress_type = compression
                 zip_info.date_time = file.date_modified.timetuple()[:6]
+
+                # Check if date_time is valid for zip format
+                if zip_info.date_time[0] < 1980:
+                    zip_info.date_time = (1980, 1, 1, 0, 0, 0)
+
                 osz.writestr(zip_info, file.content)
 
             osz.close()
