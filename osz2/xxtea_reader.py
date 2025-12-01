@@ -1,7 +1,13 @@
 
 from .xxtea import XXTEA
 from io import BytesIO
-from typing import *
+from typing import (
+    BinaryIO,
+    Iterable,
+    Optional,
+    Iterator,
+    List
+)
 
 class XXTEAReader(BinaryIO):
     """XXTEA decryption reader that decrypts data in chunks"""

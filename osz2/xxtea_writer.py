@@ -2,7 +2,13 @@
 from .utils import write_uleb128
 from .xxtea import XXTEA
 from io import BytesIO
-from typing import *
+from typing import (
+    BinaryIO,
+    Iterable,
+    Optional,
+    Iterator,
+    List
+)
 
 class XXTEAWriter(BinaryIO):
     """XXTEA encryption writer that encrypts data in chunks"""
