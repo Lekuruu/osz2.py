@@ -1,0 +1,40 @@
+{
+    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.autoImportCompletions": true,
+    "python.terminal.activateEnvironment": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "editor.formatOnSave": true,
+    "editor.rulers": [
+        88
+    ],
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.egg-info": true,
+        "**/build": true,
+        "**/*.so": true,
+        "**/*.pyc": true
+    },
+    "search.exclude": {
+        "**/__pycache__": true,
+        "**/*.egg-info": true,
+        "**/.venv": true,
+        "**/.pytest_cache": true,
+        "**/.mypy_cache": true,
+        "**/build": true,
+        "**/dist": true
+    },
+    "python.analysis.exclude": [
+        "**/.venv",
+        "**/.mypy_cache",
+        "**/.pytest_cache",
+        "**/build",
+        "**/dist",
+        "**/*.egg-info"
+    ],
+    "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: LLVM, IndentWidth: 4 }",
+}
