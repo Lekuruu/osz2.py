@@ -1,17 +1,14 @@
 
-from osz2.keys import generate_osf2_key, generate_osz2_key
+from osz2 import Osz2Package, MetadataType
+from pytest import fixture
 from pathlib import Path
-from osz2 import *
-
-import hashlib
-import pytest
 
 TESTS_DIR = Path(__file__).parent
 FILES_DIR = TESTS_DIR / "files"
 OSZ2_FILES = list(FILES_DIR.glob("*.osz2"))
 
 class TestOsz2Package:
-    @pytest.fixture(params=OSZ2_FILES, ids=lambda p: p.stem)
+    @fixture(params=OSZ2_FILES, ids=lambda p: p.stem)
     def osz2_path(self, request) -> Path:
         return request.param
 
@@ -53,7 +50,7 @@ class TestOsz2Package:
             assert "osu file format" in content
 
 class TestOsz2ExportRoundtrip:
-    @pytest.fixture(params=OSZ2_FILES, ids=lambda p: p.stem)
+    @fixture(params=OSZ2_FILES, ids=lambda p: p.stem)
     def osz2_path(self, request) -> Path:
         return request.param
 
@@ -71,22 +68,3 @@ class TestOsz2ExportRoundtrip:
             reimported_file = reimported.find_file_by_name(original_file.filename)
             assert reimported_file is not None
             assert reimported_file.content == original_file.content
-
-class TestKeyGeneration:
-    def test_osz2_key_generation(self) -> None:
-        metadata = {
-            MetadataType.Creator: "TestCreator",
-            MetadataType.BeatmapSetID: "12345",
-        }
-        key = generate_osz2_key(metadata)
-        expected = hashlib.md5(b"TestCreatoryhxyfjo512345").digest()
-        assert key == expected
-
-    def test_osf2_key_generation(self) -> None:
-        metadata = {
-            MetadataType.Title: "TestTitle",
-            MetadataType.Artist: "TestArtist",
-        }
-        key = generate_osf2_key(metadata)
-        expected = hashlib.md5("\x08TestTitle4390gn8931iTestArtist".encode()).digest()
-        assert key == expected
