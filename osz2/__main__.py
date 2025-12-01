@@ -6,6 +6,7 @@ from osz2.keys import KeyType
 from pathlib import Path
 
 import argparse
+import typing
 import sys
 import os
 
@@ -131,6 +132,7 @@ def apply_metadata(package: Osz2Package, beatmap: Dict[str, dict]) -> None:
     package.metadata[MetadataType.BeatmapSetID] = str(beatmapset_id)
     package.metadata[MetadataType.PreviewTime] = str(preview_time)
 
+@typing.no_type_check
 def parse_beatmap(content: str) -> Tuple[int, Dict[str, dict]]:
     sections: Dict[str, Union[dict, list]] = {}
     current_section = None
@@ -157,21 +159,22 @@ def parse_beatmap(content: str) -> Tuple[int, Dict[str, dict]]:
                 sections[current_section] = {}
 
             # Parse key, value pair
-            key, value = (
+            key, raw_value = (
                 split.strip() for split in line.split(':', maxsplit=1)
             )
 
             # Try to parse float/int
-            value = parse_number(value) or value
-
-            sections[current_section][key] = value
+            parsed_value = parse_number(raw_value) or raw_value
+            section_dict: dict = sections[current_section]
+            section_dict[key] = parsed_value
             continue
 
         if current_section not in sections:
             sections[current_section] = []
 
         # Append to list
-        sections[current_section].append(line)
+        section_list: list = sections[current_section]
+        section_list.append(line)
 
     return beatmap_version, sections
 
@@ -181,6 +184,7 @@ def parse_number(value: str) -> Optional[Union[int, float]]:
             return cast(value.strip())
         except ValueError:
             continue
+    return None
 
 if __name__ == "__main__":
     main()

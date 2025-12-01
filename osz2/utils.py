@@ -3,7 +3,6 @@ import datetime
 import hashlib
 import struct
 import typing
-import io
 import re
 
 unsafe_characters_pattern = re.compile(r'[<>:"/\\|?*\x00-\x1F]')
@@ -23,7 +22,7 @@ def uint32_slice_to_byte_slice(u32s: typing.List[int]) -> typing.List[int]:
         bytes_list.append((u32 >> 24) & 0xFF)
     return bytes_list
 
-def read_string(reader: io.BufferedReader) -> str:
+def read_string(reader: typing.BinaryIO) -> str:
     length = read_uleb128(reader)
     if length == 0:
         return ""
@@ -34,7 +33,7 @@ def write_string(string: str) -> bytes:
     buf = write_uleb128(len(encoded))
     return buf + encoded
 
-def read_uleb128(reader: io.BufferedReader) -> int:
+def read_uleb128(reader: typing.BinaryIO) -> int:
     result = 0
     shift = 0
 

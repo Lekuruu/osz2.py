@@ -1,5 +1,5 @@
 
-import bsdiff4
+import bsdiff4 # type: ignore
 import gzip
 import io
 

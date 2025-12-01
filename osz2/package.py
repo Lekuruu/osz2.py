@@ -1,5 +1,5 @@
 
-from typing import Dict, List, Iterable, Optional
+from typing import Dict, List, Iterable, Optional, BinaryIO, Union
 
 from .keys import KeyType, Mapping as KeyMapping
 from .xxtea_writer import XXTEAWriter
@@ -19,7 +19,7 @@ import io
 class Osz2Package:
     def __init__(
         self,
-        reader: Optional[io.BufferedReader] = None,
+        reader: Optional[BinaryIO] = None,
         metadata_only: bool = False,
         key_type: KeyType = KeyType.OSZ2
     ) -> None:
@@ -109,7 +109,7 @@ class Osz2Package:
             f'({self.metadata.get(MetadataType.Creator, "Unknown")})'
         ).strip() + extension
 
-    def read(self, reader: io.BufferedReader, metadata_only: bool = False) -> None:
+    def read(self, reader: BinaryIO, metadata_only: bool = False) -> None:
         """Read osz2 package data from a reader & apply it to this object"""
         self._read_header(reader)
 
@@ -181,7 +181,7 @@ class Osz2Package:
         """Get a file by its beatmap ID"""
         return next((file for file in self.files if self.beatmap_ids.get(file.filename, -1) == beatmap_id), None)
 
-    def _read_header(self, reader: io.BufferedReader) -> None:
+    def _read_header(self, reader: BinaryIO) -> None:
         magic = reader.read(3)
         assert magic == b"\xECHO", "Not a valid osz2 package" # nice one echo
 
@@ -200,7 +200,7 @@ class Osz2Package:
         key_generator = KeyMapping[self.key_type]
         self.key = key_generator(self.metadata)
 
-    def _read_metadata(self, reader: io.BufferedReader) -> None:
+    def _read_metadata(self, reader: BinaryIO) -> None:
         buffer = reader.read(4)
         count = struct.unpack("<I", buffer)[0]
 
@@ -215,9 +215,9 @@ class Osz2Package:
             buffer += write_string(meta_value)
 
         hash = compute_osz_hash(buffer, count*3, 0xA7)
-        assert hash == self.metadata_hash, f"Metadata hash mismatch, expected: {hash}, got: {self.metadata_hash}"
+        assert hash == self.metadata_hash, f"Metadata hash mismatch, expected: {hash.hex()}, got: {self.metadata_hash.hex()}"
 
-    def _read_file_names(self, reader: io.BufferedReader) -> None:
+    def _read_file_names(self, reader: BinaryIO) -> None:
         buffer = reader.read(4)
         count = struct.unpack("<I", buffer)[0]
 
@@ -226,7 +226,7 @@ class Osz2Package:
             beatmap_id = struct.unpack("<I", reader.read(4))[0]
             self.beatmap_ids[filename] = beatmap_id
 
-    def _read_files(self, reader: io.BufferedReader) -> None:
+    def _read_files(self, reader: BinaryIO) -> None:
         # Convert key to uint32 array for XXTEA
         key = bytes_to_uint32_array(self.key)
 
@@ -256,7 +256,7 @@ class Osz2Package:
 
             # Verify file info hash
             file_info_hash = compute_osz_hash(file_info, count*4, 0xd1)
-            assert file_info_hash == self.file_info_hash, f"File info hash mismatch, expected: {file_info_hash}, got: {self.file_info_hash}"
+            assert file_info_hash == self.file_info_hash, f"File info hash mismatch, expected: {file_info_hash.hex()}, got: {self.file_info_hash.hex()}"
 
             for i in range(count):
                 filename = read_string(xxtea)
@@ -292,7 +292,7 @@ class Osz2Package:
                 length = struct.unpack("<I", xxtea.read(4))[0]
                 self.files[i].content = xxtea.read(length)
 
-    def _write_package_contents(self, writer: io.BufferedWriter, key: List[int]) -> None:
+    def _write_package_contents(self, writer: BinaryIO, key: List[int]) -> None:
         # Prepare file data & info
         file_data = self._write_file_data(self.files, key)
         file_info = self._write_file_info(self.files, key)
