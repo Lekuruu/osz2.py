@@ -30,6 +30,7 @@ class Osz2Package:
         self.key: bytes = b""
         self.version: int = 0
 
+        self.iv: bytes = secrets.token_bytes(16)
         self.metadata_hash: bytes = b""
         self.file_info_hash: bytes = b""
         self.full_body_hash: bytes = b""
@@ -177,9 +178,8 @@ class Osz2Package:
         magic = reader.read(3)
         assert magic == b"\xECHO", "Not a valid osz2 package" # nice one echo
 
-        # Seek 17 bytes from the current position
-        # to skip unused version byte & IV data
-        reader.seek(17, 1)
+        self.version = struct.unpack("B", reader.read(1))[0]
+        self.iv = reader.read(16)
 
         self.metadata_hash = reader.read(16)
         self.file_info_hash = reader.read(16)
@@ -306,8 +306,7 @@ class Osz2Package:
         hash_meta = compute_osz_hash(meta_data, len(self.metadata) * 3, 0xA7)
 
         # Create & encode IV by XORing with body hash
-        iv = secrets.token_bytes(16)
-        encoded_iv = bytes(a ^ b for a, b in zip(iv, hash_body))
+        encoded_iv = bytes(a ^ b for a, b in zip(self.iv, hash_body))
 
         writer.write(b'\xECHO')
         writer.write(struct.pack("B", self.version))
