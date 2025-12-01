@@ -93,6 +93,12 @@ class Osz2Package:
         for file in self.files:
             if file.is_beatmap:
                 yield file
+                
+    @property
+    def video_files(self) -> Iterable[File]:
+        for file in self.files:
+            if file.is_video:
+                yield file
 
     @property
     def osz_filename(self, extension: str = ".osz") -> str:
