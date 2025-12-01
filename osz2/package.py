@@ -93,7 +93,7 @@ class Osz2Package:
         for file in self.files:
             if file.is_beatmap:
                 yield file
-                
+
     @property
     def video_files(self) -> Iterable[File]:
         for file in self.files:
@@ -327,7 +327,7 @@ class Osz2Package:
             for f in self.files if f.is_beatmap
         }
         writer.write(struct.pack("<I", len(beatmap_files)))
-        
+
         for filename, beatmap_id in beatmap_files.items():
             writer.write(write_string(filename))
             writer.write(struct.pack("<I", beatmap_id & 0xFFFFFFFF))
@@ -366,10 +366,10 @@ class Osz2Package:
             for file in files:
                 offsets.append(offset)
                 offset += 4 + len(file.content)
-            
+
             # Write first offset (always 0)
             writer.write(struct.pack("<I", offsets[0]))
-            
+
             for i, file in enumerate(files):
                 # Write filename & hash
                 writer.write_string(file.filename)
@@ -388,11 +388,11 @@ class Osz2Package:
     def _write_metadata(self) -> bytes:
         buffer = io.BytesIO()
         buffer.write(struct.pack("<I", len(self.metadata)))
-        
+
         for meta_type, value in self.metadata.items():
             buffer.write(struct.pack("<H", int(meta_type)))
             buffer.write(write_string(value or ""))
-        
+
         return buffer.getvalue()
 
     def _process_video_files(self) -> None:
