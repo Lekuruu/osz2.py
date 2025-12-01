@@ -1,5 +1,5 @@
 
-from .constants import ALLOWED_FILE_EXTENSIONS
+from .constants import ALLOWED_FILE_EXTENSIONS, VIDEO_FILE_EXTENSIONS
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -23,6 +23,10 @@ class File:
     @property
     def is_allowed_extension(self) -> bool:
         return self.file_extension in ALLOWED_FILE_EXTENSIONS
+
+    @property
+    def is_video(self) -> bool:
+        return self.file_extension in VIDEO_FILE_EXTENSIONS
 
     @property
     def is_beatmap(self) -> bool:
