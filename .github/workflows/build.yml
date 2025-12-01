@@ -52,9 +52,13 @@ jobs:
         run: |
           pip install -e .
 
-      - name: Run test script
+      - name: Run decryption test
         run: |
-          python osz2 "./tests/Karoo13 - Tic Tac Toe.osz2" "./output" --create-osz
+          python osz2 decrypt "./tests/Karoo13 - Tic Tac Toe.osz2" "./output" --create-osz
+
+      - name: Run encryption test
+        run: |
+          python osz2 encrypt "./output" "./Test.osz2"
 
   build:
     runs-on: ubuntu-latest
