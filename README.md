@@ -95,6 +95,23 @@ with open("beatmap.osz2", "rb") as f:
     package = Osz2Package(f)
 ```
 
+### Exporting an osz2 package
+
+You can initialize and export osz2 packages from a directory:
+
+```python
+from osz2 import Osz2Package, MetadataType
+
+# Initialize package from a directory containing beatmap files
+package = Osz2Package.from_directory("./my_beatmap_folder")
+
+# Export to osz2 format
+osz2_data = package.export()
+
+with open("output.osz2", "wb") as f:
+    f.write(osz2_data)
+```
+
 ### Applying a patch
 
 When developing an implementation of the beatmap submission system, this could come in handy:
