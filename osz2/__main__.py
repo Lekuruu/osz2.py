@@ -91,7 +91,7 @@ def encrypt_directory(
         beatmap_id = content.get('Metadata', {}).get('BeatmapID', None)
 
         if beatmap_id is not None:
-            package.filenames[beatmap.filename] = int(beatmap_id)
+            package.beatmap_ids[beatmap.filename] = int(beatmap_id)
 
         apply_metadata(package, content)
 

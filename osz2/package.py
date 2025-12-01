@@ -24,7 +24,7 @@ class Osz2Package:
         key_type: KeyType = KeyType.OSZ2
     ) -> None:
         self.metadata: Dict[MetadataType, str] = {}
-        self.filenames: Dict[str, int] = {}
+        self.beatmap_ids: Dict[str, int] = {}
         self.files: List[File] = []
         self.key_type = key_type
         self.key: bytes = b""
@@ -84,7 +84,7 @@ class Osz2Package:
 
                 # Auto-assign beatmap IDs
                 if file.is_beatmap:
-                    package.filenames[rel_path] = -1
+                    package.beatmap_ids[rel_path] = -1
 
         return package
 
@@ -178,7 +178,7 @@ class Osz2Package:
 
     def find_file_by_beatmap_id(self, beatmap_id: int) -> Optional[File]:
         """Get a file by its beatmap ID"""
-        return next((file for file in self.files if self.filenames.get(file.filename, -1) == beatmap_id), None)
+        return next((file for file in self.files if self.beatmap_ids.get(file.filename, -1) == beatmap_id), None)
 
     def _read_header(self, reader: io.BufferedReader) -> None:
         magic = reader.read(3)
@@ -223,7 +223,7 @@ class Osz2Package:
         for _ in range(count):
             filename = read_string(reader)
             beatmap_id = struct.unpack("<I", reader.read(4))[0]
-            self.filenames[filename] = beatmap_id
+            self.beatmap_ids[filename] = beatmap_id
 
     def _read_files(self, reader: io.BufferedReader) -> None:
         # Convert key to uint32 array for XXTEA
@@ -323,7 +323,7 @@ class Osz2Package:
         writer.write(meta_data)
 
         beatmap_files = {
-            f.filename: self.filenames.get(f.filename, -1) 
+            f.filename: self.beatmap_ids.get(f.filename, -1) 
             for f in self.files if f.is_beatmap
         }
         writer.write(struct.pack("<I", len(beatmap_files)))
