@@ -6,18 +6,15 @@ build-backend = "setuptools.build_meta"
 name = "osz2"
 version = "1.1.0"
 authors = [
-    {name = "Lekuru", email = "contact@lekuru.xyz"},
-    {name = "ascenttree"}
+    { name = "Lekuru", email = "contact@lekuru.xyz" },
+    { name = "ascenttree" },
 ]
 description = "A python library for reading osz2 files"
 readme = "README.md"
 requires-python = ">=3.9"
 keywords = ["osu", "osz2", "python", "bancho"]
 license = "MIT"
-dependencies = [
-    "numpy",
-    "bsdiff4"
-]
+dependencies = ["numpy", "bsdiff4"]
 
 [tool.setuptools]
 packages = ["osz2"]
@@ -27,3 +24,10 @@ Homepage = "https://github.com/Lekuruu/osz2.py"
 
 [project.scripts]
 osz2 = "osz2.__main__:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v"
