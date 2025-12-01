@@ -1,4 +1,5 @@
 
+from osz2.keys import generate_osf2_key, generate_osz2_key
 from osz2.utils import bytes_to_uint32_array
 from osz2.constants import KNOWN_PLAIN
 from pathlib import Path
@@ -149,7 +150,7 @@ class TestKeyGeneration:
             MetadataType.Creator: "TestCreator",
             MetadataType.BeatmapSetID: "12345",
         }
-        key = keys.generate_osz2_key(metadata)
+        key = generate_osz2_key(metadata)
         expected = hashlib.md5(b"TestCreatoryhxyfjo512345").digest()
         assert key == expected
 
@@ -158,7 +159,7 @@ class TestKeyGeneration:
             MetadataType.Title: "TestTitle",
             MetadataType.Artist: "TestArtist",
         }
-        key = keys.generate_osf2_key(metadata)
+        key = generate_osf2_key(metadata)
         expected = hashlib.md5("\x08TestTitle4390gn8931iTestArtist".encode()).digest()
         assert key == expected
 
