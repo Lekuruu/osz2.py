@@ -52,21 +52,17 @@ jobs:
         run: |
           pip install -e .
 
-      - name: Install mypy
+      - name: Install test dependencies
         run: |
-          pip install mypy
+          pip install mypy pytest
 
       - name: Run mypy type checking
         run: |
           mypy osz2
 
-      - name: Run decryption test
+      - name: Run pytest
         run: |
-          python osz2 decrypt "./tests/Karoo13 - Tic Tac Toe.osz2" "./output" --create-osz
-
-      - name: Run encryption test
-        run: |
-          python osz2 encrypt "./output" "./Test.osz2"
+          pytest tests/ -v
 
   build:
     runs-on: ubuntu-latest
