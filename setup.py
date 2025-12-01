@@ -1,4 +1,4 @@
-from setuptools import Extension, setup
+from setuptools import Extension, setup  # type: ignore[import-untyped]
 
 setup(
     ext_modules=[
