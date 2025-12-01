@@ -130,6 +130,7 @@ class Osz2Package:
         key_uint32 = bytes_to_uint32_array(key)
 
         output = io.BytesIO()
+        self._process_video_files()
         self._write_package_contents(output, key_uint32)
         return output.getvalue()
 
@@ -388,3 +389,24 @@ class Osz2Package:
             buffer.write(write_string(value or ""))
         
         return buffer.getvalue()
+
+    def _process_video_files(self) -> None:
+        offset = 0
+
+        for file in self.files:
+            if not file.is_video:
+                offset += 4 + len(file.content)
+                continue
+
+            assert len(file.content) >= 1024, "Video needs to be at least 1024 bytes big"
+
+            # Calculate video hash from middle section of the file
+            data_length = len(file.content)
+            foot_start = (data_length // 2) - ((data_length // 2) % 16) - 512 + 16
+            foot_data = file.content[foot_start:foot_start + 1024]
+            video_hash = hashlib.md5(foot_data).hexdigest().upper()
+
+            self.metadata[MetadataType.VideoDataOffset] = str(offset)
+            self.metadata[MetadataType.VideoDataLength] = str(data_length)
+            self.metadata[MetadataType.VideoHash] = video_hash
+            break
