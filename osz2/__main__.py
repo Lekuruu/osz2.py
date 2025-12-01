@@ -66,8 +66,8 @@ def save_osz2(package: Osz2Package, output: str) -> None:
     for file in package.files:
         output_path = os.path.join(output, file.filename)
 
-        if (dir := Path(output_path).parent) != ".":
-            dir.mkdir(parents=True, exist_ok=True)
+        if (directory := Path(output_path).parent) != ".":
+            directory.mkdir(parents=True, exist_ok=True)
 
         with open(output_path, "wb") as f:
             f.write(file.content)
@@ -143,7 +143,7 @@ def parse_beatmap(content: str) -> Tuple[int, Dict[str, dict]]:
             beatmap_version = int(line.removeprefix('osu file format v'))
             continue
 
-        if (line.startswith('[') and line.endswith(']')):
+        if line.startswith('[') and line.endswith(']'):
             # New section
             current_section = line.removeprefix('[').removesuffix(']')
             continue

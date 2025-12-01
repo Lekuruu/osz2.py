@@ -1,5 +1,5 @@
 
-from typing import Dict, List, Iterable, Optional, BinaryIO, Union
+from typing import Dict, List, Iterable, Optional, BinaryIO
 
 from .keys import KeyType, Mapping as KeyMapping
 from .xxtea_writer import XXTEAWriter
@@ -214,8 +214,8 @@ class Osz2Package:
             buffer += buf
             buffer += write_string(meta_value)
 
-        hash = compute_osz_hash(buffer, count*3, 0xA7)
-        assert hash == self.metadata_hash, f"Metadata hash mismatch, expected: {hash.hex()}, got: {self.metadata_hash.hex()}"
+        metadata_hash = compute_osz_hash(buffer, count*3, 0xA7)
+        assert metadata_hash == self.metadata_hash, f"Metadata hash mismatch, expected: {metadata_hash.hex()}, got: {self.metadata_hash.hex()}"
 
     def _read_file_names(self, reader: BinaryIO) -> None:
         buffer = reader.read(4)
