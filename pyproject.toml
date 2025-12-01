@@ -16,6 +16,9 @@ keywords = ["osu", "osz2", "python", "bancho"]
 license = "MIT"
 dependencies = ["numpy", "bsdiff4"]
 
+[project.optional-dependencies]
+dev = ["pytest"]
+
 [tool.setuptools]
 packages = ["osz2"]
 
