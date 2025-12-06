@@ -30,6 +30,9 @@ class Osz2Package:
         self.key: bytes = b""
         self.version: int = 0
 
+        self.data_offset: int = 0
+        self.file_info_offset: int = 0
+
         self.iv: bytes = secrets.token_bytes(16)
         self.metadata_hash: bytes = b""
         self.file_info_hash: bytes = b""
@@ -247,6 +250,9 @@ class Osz2Package:
         xtea.decrypt(encrypted_magic, 0, 64)
         assert encrypted_magic == KNOWN_PLAIN, "Invalid encryption key"
 
+        # Store file info offset
+        self.file_info_offset = reader.tell()
+
         # Read encrypted i32 length
         length = struct.unpack("<I", reader.read(4))[0]
 
@@ -255,6 +261,10 @@ class Osz2Package:
             length -= self.file_info_hash[i] | (self.file_info_hash[i+1] << 17)
 
         file_info = reader.read(length)
+
+        # Store data offset
+        self.data_offset = reader.tell()
+        
         file_data = reader.read()
         file_offset = reader.seek(0, 1)
         total_size = reader.seek(0, 2)
