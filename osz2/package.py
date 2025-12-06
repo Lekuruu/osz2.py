@@ -344,6 +344,11 @@ class Osz2Package:
         writer.write(hash_body)
         writer.write(meta_data)
 
+        # Store hashes in object
+        self.file_info_hash = hash_info
+        self.full_body_hash = hash_body
+        self.metadata_hash = hash_meta
+
         beatmap_files = {
             f.filename: self.beatmap_ids.get(f.filename, -1) 
             for f in self.files if f.is_beatmap
