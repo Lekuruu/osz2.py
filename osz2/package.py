@@ -265,6 +265,20 @@ class Osz2Package:
         """Get the value of the specified metadata type"""
         return self.metadata.get(meta_type)
 
+    def set_beatmap_id(self, filename: str, beatmap_id: int) -> None:
+        """Set the beatmap ID for a specific beatmap file"""
+        file = self.find_file_by_name(filename)
+        assert file is not None, f"File not found: {filename}"
+        assert file.is_beatmap, f"File is not a beatmap: {filename}"
+        self.beatmap_ids[filename] = beatmap_id
+
+    def set_beatmapset_id(self, beatmapset_id: int) -> None:
+        """Set the BeatmapSetID metadata for this package"""
+        self.add_metadata(
+            MetadataType.BeatmapSetID,
+            beatmapset_id
+         )
+
     def _read_header(self, reader: BinaryIO) -> None:
         magic = reader.read(3)
         assert magic == b"\xECHO", "Not a valid osz2 package" # nice one echo
