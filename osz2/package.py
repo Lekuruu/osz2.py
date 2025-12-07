@@ -250,6 +250,21 @@ class Osz2Package:
 
         return True
 
+    def add_metadata(self, meta_type: MetadataType, value: Any) -> None:
+        """Add or replace a new metadata item"""
+        self.metadata[meta_type] = str(value)
+
+    def remove_metadata(self, meta_type: MetadataType) -> bool:
+        """Remove the specified metadata item"""
+        if meta_type in self.metadata:
+            del self.metadata[meta_type]
+            return True
+        return False
+
+    def get_metadata(self, meta_type: MetadataType) -> Optional[str]:
+        """Get the value of the specified metadata type"""
+        return self.metadata.get(meta_type)
+
     def _read_header(self, reader: BinaryIO) -> None:
         magic = reader.read(3)
         assert magic == b"\xECHO", "Not a valid osz2 package" # nice one echo
