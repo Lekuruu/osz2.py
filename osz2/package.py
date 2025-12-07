@@ -267,9 +267,9 @@ class Osz2Package:
             return True
         return False
 
-    def get_metadata(self, meta_type: MetadataType) -> Optional[str]:
+    def get_metadata(self, meta_type: MetadataType, default: Any = None) -> Optional[str]:
         """Get the value of the specified metadata type"""
-        return self.metadata.get(meta_type)
+        return self.metadata.get(meta_type, default)
 
     def set_beatmap_id(self, filename: str, beatmap_id: int) -> None:
         """Set the beatmap ID for a specific beatmap file"""
