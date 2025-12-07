@@ -105,28 +105,24 @@ def apply_metadata(package: Osz2Package, beatmap: Dict[str, dict]) -> None:
         print("Error: No 'Metadata' section found in beatmap")
         sys.exit(1)
 
-    if 'General' not in beatmap:
-        print("Error: No 'General' section found in beatmap")
-        sys.exit(1)
-
     metadata_section = beatmap['Metadata']
-    title = metadata_section.get('TitleUnicode') or metadata_section.get('Title', '')
-    artist = metadata_section.get('ArtistUnicode') or metadata_section.get('Artist', '')
+    title = metadata_section.get('Title', '')
+    artist = metadata_section.get('Artist', '')
+    title_unicode = metadata_section.get('TitleUnicode', '')
+    artist_unicode = metadata_section.get('ArtistUnicode', '')
     creator = metadata_section.get('Creator', '')
     source = metadata_section.get('Source', '')
     tags = metadata_section.get('Tags', '')
     beatmapset_id = metadata_section.get('BeatmapSetID', -1)
 
-    general_section = beatmap['General']
-    preview_time = general_section.get('PreviewTime', 0)
-
-    package.add_metadata(MetadataType.Title, title)
+    package.add_metadata(MetadataType.BeatmapSetID, beatmapset_id)
     package.add_metadata(MetadataType.Artist, artist)
     package.add_metadata(MetadataType.Creator, creator)
     package.add_metadata(MetadataType.Source, source)
+    package.add_metadata(MetadataType.Title, title)
+    package.add_metadata(MetadataType.TitleUnicode, title_unicode)
+    package.add_metadata(MetadataType.ArtistUnicode, artist_unicode)
     package.add_metadata(MetadataType.Tags, tags)
-    package.add_metadata(MetadataType.BeatmapSetID, beatmapset_id)
-    package.add_metadata(MetadataType.PreviewTime, preview_time)
 
 @typing.no_type_check
 def parse_beatmap(content: str) -> Tuple[int, Dict[str, dict]]:
