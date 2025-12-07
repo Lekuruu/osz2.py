@@ -110,6 +110,80 @@ osz2_data = package.export()
 
 with open("output.osz2", "wb") as f:
     f.write(osz2_data)
+
+# Or save directly to a file
+package.save("./output.osz2")
+```
+
+### Managing Files
+
+You can add, remove, and modify files within a package:
+
+```python
+from osz2 import Osz2Package, MetadataType
+
+# Create a new package
+package = Osz2Package()
+
+# Add metadata (required for export)
+package.add_metadata(MetadataType.Title, "My Beatmap")
+package.add_metadata(MetadataType.Artist, "Artist Name")
+package.add_metadata(MetadataType.Creator, "Mapper Name")
+package.add_metadata(MetadataType.BeatmapSetID, 123456)
+
+# Add a file from memory
+beatmap_content = b"osu file format v14\n..."
+package.add_file("my_beatmap.osu", beatmap_content)
+
+# Add a file from disk
+package.add_file_from_disk("audio.mp3", "./path/to/audio.mp3")
+
+# Add an entire directory (non-recursive)
+package.add_directory("./beatmap_files", recursive=False)
+
+# Add an entire directory (recursive, preserves folder structure)
+package.add_directory("./beatmap_folder", recursive=True)
+
+# Remove a file
+package.remove_file("old_file.osu")
+
+# Find a file by name
+file = package.find_file_by_name("audio.mp3")
+if file:
+    print(f"Found: {file.filename}, size: {file.size}")
+
+# Set beatmap IDs
+package.set_beatmap_id("my_beatmap.osu", 789012)
+
+# Export the package
+package.save("my_beatmap.osz2")
+```
+
+### Managing Metadata
+
+Metadata can be added, retrieved, and removed:
+
+```python
+from osz2 import Osz2Package, MetadataType
+
+package = Osz2Package.from_file("beatmap.osz2")
+
+# Add or update metadata
+package.add_metadata(MetadataType.Title, "New Title")
+package.add_metadata(MetadataType.Artist, "New Artist")
+
+# Get metadata
+title = package.get_metadata(MetadataType.Title)
+print(f"Title: {title}")
+
+# Remove metadata
+package.remove_metadata(MetadataType.Difficulty)
+
+# Convenience method for setting beatmapset ID
+package.set_beatmapset_id(999999)
+
+# Save changes
+package.save("modified.osz2")
 ```
 
 ### Applying a patch
