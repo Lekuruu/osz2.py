@@ -1,5 +1,5 @@
 
-from typing import Dict, List, Iterable, Optional, BinaryIO
+from typing import Any, Dict, List, Iterable, Optional, BinaryIO
 
 from .keys import KeyType, Mapping as KeyMapping
 from .xxtea_writer import XXTEAWriter
@@ -61,34 +61,7 @@ class Osz2Package:
     ) -> "Osz2Package":
         """Initialize an osz2 package object from a directory, useful for exporting packages"""
         package = cls(key_type=key_type)
-
-        for root, _, filenames in os.walk(directory):
-            for filename in filenames:
-                filepath = os.path.join(root, filename)
-                rel_path = os.path.relpath(filepath, directory)
-
-                with open(filepath, 'rb') as f:
-                    content = f.read()
-
-                stat = os.stat(filepath)
-                created = datetime.datetime.fromtimestamp(stat.st_ctime)
-                modified = datetime.datetime.fromtimestamp(stat.st_mtime)
-
-                file = File(
-                    filename=rel_path,
-                    offset=0,
-                    size=len(content),
-                    hash=hashlib.md5(content).digest(),
-                    date_created=created,
-                    date_modified=modified,
-                    content=content
-                )
-                package.files.append(file)
-
-                # Auto-assign beatmap IDs
-                if file.is_beatmap:
-                    package.beatmap_ids[rel_path] = -1
-
+        package.add_directory(directory, recursive=True)
         return package
 
     @property
@@ -148,6 +121,7 @@ class Osz2Package:
 
         output = io.BytesIO()
         self._process_video_files()
+        self._update_file_offsets()
         self._write_package_contents(output, key_array)
         return output.getvalue()
 
@@ -194,6 +168,87 @@ class Osz2Package:
     def find_file_by_beatmap_id(self, beatmap_id: int) -> Optional[File]:
         """Get a file by its beatmap ID"""
         return next((file for file in self.files if self.beatmap_ids.get(file.filename, -1) == beatmap_id), None)
+
+    def add_file(
+        self,
+        filename: str,
+        content: bytes,
+        date_created: Optional[datetime.datetime] = None,
+        date_modified: Optional[datetime.datetime] = None
+    ) -> None:
+        """Add or replace a file in this package"""
+        date_created = date_created or datetime.datetime.now()
+        date_modified = date_modified or datetime.datetime.now()
+
+        # Remove existing file if present
+        if existing := self.find_file_by_name(filename):
+            self.files.remove(existing)
+
+        # Create new file
+        file = File(
+            filename=filename,
+            offset=0,
+            size=len(content),
+            hash=hashlib.md5(content).digest(),
+            date_created=date_created,
+            date_modified=date_modified,
+            content=content
+        )
+        self.files.append(file)
+
+        # Auto-assign beatmap ID if it's a beatmap file
+        if file.is_beatmap and filename not in self.beatmap_ids:
+            self.beatmap_ids[filename] = -1
+
+    def add_file_from_disk(self, filename: str, path: str) -> None:
+        """Add a file from disk to this package"""
+        with open(path, 'rb') as f:
+            content = f.read()
+
+        stat = os.stat(path)
+        created = datetime.datetime.fromtimestamp(stat.st_ctime)
+        modified = datetime.datetime.fromtimestamp(stat.st_mtime)
+
+        self.add_file(filename, content, created, modified)
+
+    def add_directory(self, path: str, recursive: bool = True) -> None:
+        """Add all the files in a directory to this package"""
+        if not os.path.isdir(path):
+            raise ValueError(f"Path is not a directory: {path}")
+
+        path = os.path.abspath(path)
+
+        if not recursive:
+            # Only add files in the immediate directory
+            for filename in os.listdir(path):
+                filepath = os.path.join(path, filename)
+
+                if not os.path.isfile(filepath):
+                    continue
+
+                self.add_file_from_disk(filename, filepath)
+        else:
+            # Recursively add all files
+            for root, _, filenames in os.walk(path):
+                for filename in filenames:
+                    filepath = os.path.join(root, filename)
+
+                    # Preserve directory structure relative to base path
+                    rel_path = os.path.relpath(filepath, path)
+                    self.add_file_from_disk(rel_path, filepath)
+
+    def remove_file(self, filename: str) -> bool:
+        """Remove a file from this package"""
+        if not (file := self.find_file_by_name(filename)):
+            return False
+
+        self.files.remove(file)
+
+        # Remove beatmap ID mapping if present
+        if filename in self.beatmap_ids:
+            del self.beatmap_ids[filename]
+
+        return True
 
     def _read_header(self, reader: BinaryIO) -> None:
         magic = reader.read(3)
@@ -421,6 +476,13 @@ class Osz2Package:
             buffer.write(write_string(value or ""))
 
         return buffer.getvalue()
+
+    def _update_file_offsets(self) -> None:
+        offset = 0
+
+        for file in self.files:
+            file.offset = offset
+            offset += 4 + len(file.content)
 
     def _process_video_files(self) -> None:
         offset = 0
