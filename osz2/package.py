@@ -206,6 +206,9 @@ class Osz2Package:
         if file.is_beatmap and filename not in self.beatmap_ids:
             self.beatmap_ids[filename] = -1
 
+        # Sort files by size descending
+        self.files.sort(key=lambda f: f.size, reverse=True)
+
     def add_file_from_disk(self, filename: str, path: str) -> None:
         """Add a file from disk to this package"""
         with open(path, 'rb') as f:
