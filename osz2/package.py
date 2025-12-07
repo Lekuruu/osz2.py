@@ -206,9 +206,6 @@ class Osz2Package:
         if file.is_beatmap and filename not in self.beatmap_ids:
             self.beatmap_ids[filename] = -1
 
-        # Sort files by size descending
-        self.files.sort(key=lambda f: f.size, reverse=True)
-
     def add_file_from_disk(self, filename: str, path: str) -> None:
         """Add a file from disk to this package"""
         with open(path, 'rb') as f:
@@ -407,6 +404,9 @@ class Osz2Package:
                 self.files[i].content = xxtea.read(length)
 
     def _write_package_contents(self, writer: BinaryIO, key: List[int]) -> None:
+        # Sort files before writing
+        self._sort_files_for_export()
+
         # Prepare file data & info
         file_data = self._write_file_data(self.files, key)
         file_info = self._write_file_info(self.files, key)
@@ -466,6 +466,19 @@ class Osz2Package:
         writer.write(struct.pack("<I", encoded_length & 0xFFFFFFFF))
         writer.write(file_info)
         writer.write(file_data)
+
+    def _sort_files_for_export(self) -> None:
+        # Sort files using the same logic as C# FileComparer
+        # https://github.com/ppy/osu-stream/blob/master/osu!stream/Helpers/osu!common/MapPackage.cs#L1478
+        def file_sort_key(file: File):
+            if file.is_video:
+                # Videos go last
+                return (1, file.filename)
+
+            # Other files go first, sorted by filename
+            return (0, file.filename)
+
+        self.files.sort(key=file_sort_key)
 
     def _write_file_data(self, files: List[File], key: List[int]) -> bytes:
         with XXTEAWriter(key) as writer:
