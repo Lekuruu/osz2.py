@@ -89,26 +89,26 @@ class XXTEA:
         # Convert buffer slice to numpy array for parallel processing
         buffer_size = full_word_count * MAX_BYTES
         data = np.frombuffer(buffer[buf_start:buf_start + buffer_size], dtype=np.uint32).copy()
-        crypto.encrypt_blocks(data, self.key, full_word_count)
+        crypto.xxtea_encrypt_blocks(data, self.key, full_word_count)
         buffer[buf_start:buf_start + buffer_size] = data.tobytes()
 
     def decrypt_full_blocks_parallel(self, buffer: bytearray, buf_start: int, full_word_count: int) -> None:
         # Convert buffer slice to numpy array for parallel processing
         buffer_size = full_word_count * MAX_BYTES
         data = np.frombuffer(buffer[buf_start:buf_start + buffer_size], dtype=np.uint32).copy()
-        crypto.decrypt_blocks(data, self.key, full_word_count)
+        crypto.xxtea_decrypt_blocks(data, self.key, full_word_count)
         buffer[buf_start:buf_start + buffer_size] = data.tobytes()
 
     @staticmethod
     def encrypt_words(n: int, key: np.ndarray, data: bytearray, offset: int) -> None:
         v = np.frombuffer(data[offset:offset + n*4], dtype=np.uint32).copy()
-        crypto.encrypt_block(v, key, n)
+        crypto.xxtea_encrypt_block(v, key, n)
         data[offset:offset + n*4] = v.tobytes()
 
     @staticmethod
     def decrypt_words(n: int, key: np.ndarray, data: bytearray, offset: int) -> None:
         v = np.frombuffer(data[offset:offset + n*4], dtype=np.uint32).copy()
-        crypto.decrypt_block(v, key, n)
+        crypto.xxtea_decrypt_block(v, key, n)
         data[offset:offset + n*4] = v.tobytes()
 
     @staticmethod
@@ -117,7 +117,7 @@ class XXTEA:
             return
 
         v = np.frombuffer(data[offset:offset + MAX_BYTES], dtype=np.uint32).copy()
-        crypto.encrypt_block_fixed(v, key)
+        crypto.xxtea_encrypt_block_fixed(v, key)
         data[offset:offset + MAX_BYTES] = v.tobytes()
 
     @staticmethod
@@ -126,5 +126,5 @@ class XXTEA:
             return
 
         v = np.frombuffer(data[offset:offset + MAX_BYTES], dtype=np.uint32).copy()
-        crypto.decrypt_block_fixed(v, key)
+        crypto.xxtea_decrypt_block_fixed(v, key)
         data[offset:offset + MAX_BYTES] = v.tobytes()

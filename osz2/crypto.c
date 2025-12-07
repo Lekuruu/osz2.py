@@ -108,7 +108,7 @@ static void decrypt_block_impl(uint32_t *v, const uint32_t *key, int n) {
     }
 }
 
-static PyObject *crypto_encrypt_bytes(PyObject *self, PyObject *args) {
+static PyObject *simple_cryptor_encrypt_bytes(PyObject *self, PyObject *args) {
     Py_buffer buf_view;
     Py_buffer key_view;
 
@@ -163,7 +163,7 @@ static PyObject *crypto_encrypt_bytes(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *crypto_decrypt_bytes(PyObject *self, PyObject *args) {
+static PyObject *simple_cryptor_decrypt_bytes(PyObject *self, PyObject *args) {
     Py_buffer buf_view;
     Py_buffer key_view;
 
@@ -219,7 +219,7 @@ static PyObject *crypto_decrypt_bytes(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *crypto_encrypt_block(PyObject *self, PyObject *args) {
+static PyObject *xxtea_encrypt_block(PyObject *self, PyObject *args) {
     Py_buffer v_view;
     Py_buffer key_view;
     Py_ssize_t n;
@@ -254,7 +254,7 @@ static PyObject *crypto_encrypt_block(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *crypto_decrypt_block(PyObject *self, PyObject *args) {
+static PyObject *xxtea_decrypt_block(PyObject *self, PyObject *args) {
     Py_buffer v_view;
     Py_buffer key_view;
     Py_ssize_t n;
@@ -289,7 +289,7 @@ static PyObject *crypto_decrypt_block(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *crypto_encrypt_block_fixed(PyObject *self, PyObject *args) {
+static PyObject *xxtea_encrypt_block_fixed(PyObject *self, PyObject *args) {
     Py_buffer v_view;
     Py_buffer key_view;
 
@@ -316,7 +316,7 @@ static PyObject *crypto_encrypt_block_fixed(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *crypto_decrypt_block_fixed(PyObject *self, PyObject *args) {
+static PyObject *xxtea_decrypt_block_fixed(PyObject *self, PyObject *args) {
     Py_buffer v_view;
     Py_buffer key_view;
 
@@ -343,7 +343,7 @@ static PyObject *crypto_decrypt_block_fixed(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *crypto_encrypt_blocks(PyObject *self, PyObject *args) {
+static PyObject *xxtea_encrypt_blocks(PyObject *self, PyObject *args) {
     Py_buffer data_view;
     Py_buffer key_view;
     Py_ssize_t block_count;
@@ -383,7 +383,7 @@ static PyObject *crypto_encrypt_blocks(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *crypto_decrypt_blocks(PyObject *self, PyObject *args) {
+static PyObject *xxtea_decrypt_blocks(PyObject *self, PyObject *args) {
     Py_buffer data_view;
     Py_buffer key_view;
     Py_ssize_t block_count;
@@ -424,14 +424,14 @@ static PyObject *crypto_decrypt_blocks(PyObject *self, PyObject *args) {
 }
 
 static PyMethodDef cryptoMethods[] = {
-    {"encrypt_bytes", crypto_encrypt_bytes, METH_VARARGS, "Encrypt bytes in-place using the simple cryptor"},
-    {"decrypt_bytes", crypto_decrypt_bytes, METH_VARARGS, "Decrypt bytes in-place using the simple cryptor"},
-    {"encrypt_block", crypto_encrypt_block, METH_VARARGS, "Encrypt an XXTEA block"},
-    {"decrypt_block", crypto_decrypt_block, METH_VARARGS, "Decrypt an XXTEA block"},
-    {"encrypt_block_fixed", crypto_encrypt_block_fixed, METH_VARARGS, "Encrypt a fixed-size XXTEA block"},
-    {"decrypt_block_fixed", crypto_decrypt_block_fixed, METH_VARARGS, "Decrypt a fixed-size XXTEA block"},
-    {"encrypt_blocks", crypto_encrypt_blocks, METH_VARARGS, "Encrypt multiple XXTEA blocks"},
-    {"decrypt_blocks", crypto_decrypt_blocks, METH_VARARGS, "Decrypt multiple XXTEA blocks"},
+    {"simple_cryptor_encrypt_bytes", simple_cryptor_encrypt_bytes, METH_VARARGS, "Encrypt bytes in-place using the simple cryptor"},
+    {"simple_cryptor_decrypt_bytes", simple_cryptor_decrypt_bytes, METH_VARARGS, "Decrypt bytes in-place using the simple cryptor"},
+    {"xxtea_encrypt_block", xxtea_encrypt_block, METH_VARARGS, "Encrypt an XXTEA block"},
+    {"xxtea_decrypt_block", xxtea_decrypt_block, METH_VARARGS, "Decrypt an XXTEA block"},
+    {"xxtea_encrypt_block_fixed", xxtea_encrypt_block_fixed, METH_VARARGS, "Encrypt a fixed-size XXTEA block"},
+    {"xxtea_decrypt_block_fixed", xxtea_decrypt_block_fixed, METH_VARARGS, "Decrypt a fixed-size XXTEA block"},
+    {"xxtea_encrypt_blocks", xxtea_encrypt_blocks, METH_VARARGS, "Encrypt multiple XXTEA blocks"},
+    {"xxtea_decrypt_blocks", xxtea_decrypt_blocks, METH_VARARGS, "Decrypt multiple XXTEA blocks"},
     {NULL, NULL, 0, NULL}
 };
 

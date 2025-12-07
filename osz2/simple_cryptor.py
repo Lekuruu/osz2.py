@@ -10,7 +10,7 @@ class SimpleCryptor:
         self.key = np.array(uint32_slice_to_byte_slice(key), dtype=np.uint8)
 
     def encrypt_bytes(self, buf: bytearray) -> None:
-        crypto.encrypt_bytes(buf, self.key)
+        crypto.simple_cryptor_encrypt_bytes(buf, self.key)
 
     def decrypt_bytes(self, buf: bytearray) -> None:
-        crypto.decrypt_bytes(buf, self.key)
+        crypto.simple_cryptor_decrypt_bytes(buf, self.key)

@@ -11,7 +11,7 @@ class XTEA:
 
     def __init__(self, key: List[int]) -> None:
         self.key = key
-        self.simple_cryptor = SimpleCryptor(key)
+        self.cryptor = SimpleCryptor(key)
 
     def decrypt(self, buffer: bytearray, start: int, count: int) -> None:
         self._encrypt_decrypt(buffer, start, count, False)
@@ -41,12 +41,12 @@ class XTEA:
         if left_over > 0:
             leftover_start = buf_start + full_word_count * 8
             leftover_buf = buffer[leftover_start:leftover_start + left_over]
-            
+
             if encrypt:
-                self.simple_cryptor.encrypt_bytes(leftover_buf)
+                self.cryptor.encrypt_bytes(leftover_buf)
             else:
-                self.simple_cryptor.decrypt_bytes(leftover_buf)
-            
+                self.cryptor.decrypt_bytes(leftover_buf)
+
             buffer[leftover_start:leftover_start + left_over] = leftover_buf
 
     def _encrypt_word(self, v0: int, v1: int) -> tuple:
