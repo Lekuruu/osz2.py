@@ -125,6 +125,12 @@ class Osz2Package:
         self._write_package_contents(output, key_array)
         return output.getvalue()
 
+    def save(self, path: str) -> int:
+        """Save the current package to a file"""
+        data = self.export()
+        with open(path, "wb") as f:
+            return f.write(data)
+
     def create_osz_package(
         self,
         compression: int = zipfile.ZIP_DEFLATED,

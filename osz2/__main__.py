@@ -97,12 +97,8 @@ def encrypt_directory(
         apply_metadata(package, content)
 
     print(f"Exporting package with {len(package.files)} files...")
-
-    with open(output, "wb") as f:
-        data = package.export()
-        f.write(data)
-
-    print(f"Saved to: {output}")
+    bytes_written = package.save(output)
+    print(f"Saved to: {output} ({bytes_written} bytes)")
 
 def apply_metadata(package: Osz2Package, beatmap: Dict[str, dict]) -> None:
     if 'Metadata' not in beatmap:
