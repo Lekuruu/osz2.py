@@ -1,6 +1,8 @@
 
 from .simple_cryptor import SimpleCryptor
+from . import crypto
 from typing import List
+import numpy as np
 import struct
 
 TEA_DELTA = 0x9E3779B9
@@ -10,7 +12,7 @@ class XTEA:
     """XTEA implements the Extended Tiny Encryption Algorithm"""
 
     def __init__(self, key: List[int]) -> None:
-        self.key = key
+        self.key = np.array(key, dtype=np.uint32)
         self.cryptor = SimpleCryptor(key)
 
     def decrypt(self, buffer: bytearray, start: int, count: int) -> None:
@@ -50,21 +52,7 @@ class XTEA:
             buffer[leftover_start:leftover_start + left_over] = leftover_buf
 
     def _encrypt_word(self, v0: int, v1: int) -> tuple:
-        sum_val = 0
-        for _ in range(TEA_ROUNDS):
-            v0 = (v0 + ((((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum_val + self.key[sum_val & 3]))) & 0xFFFFFFFF
-            sum_val = (sum_val + TEA_DELTA) & 0xFFFFFFFF
-            v1 = (v1 + ((((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum_val + self.key[(sum_val >> 11) & 3]))) & 0xFFFFFFFF
-        return v0, v1
+        return crypto.xtea_encrypt_word(v0, v1, self.key)
 
     def _decrypt_word(self, v0: int, v1: int) -> tuple:
-        # Calculate sum with proper overflow handling
-        sum_val = 0
-        for _ in range(TEA_ROUNDS):
-            sum_val = (sum_val + TEA_DELTA) & 0xFFFFFFFF
-
-        for _ in range(TEA_ROUNDS):
-            v1 = (v1 - ((((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum_val + self.key[(sum_val >> 11) & 3]))) & 0xFFFFFFFF
-            sum_val = (sum_val - TEA_DELTA) & 0xFFFFFFFF
-            v0 = (v0 - ((((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum_val + self.key[sum_val & 3]))) & 0xFFFFFFFF
-        return v0, v1
+        return crypto.xtea_decrypt_word(v0, v1, self.key)

@@ -4,6 +4,7 @@
 
 #define MAX_WORDS 16
 #define TEA_DELTA 0x9E3779B9u
+#define XTEA_ROUNDS 32
 
 static inline uint8_t rotl8(uint8_t value, uint8_t count) {
     count &= 7u;
@@ -27,6 +28,53 @@ static inline uint32_t mx(uint32_t y, uint32_t z, uint32_t sum, uint32_t key_val
     uint32_t term3 = (sum ^ y);
     uint32_t term4 = (key_val ^ z);
     return (term1 + term2) ^ (term3 + term4);
+}
+
+static void xtea_encrypt_word_impl(uint32_t *v0, uint32_t *v1, const uint32_t *key) {
+    uint32_t sum = 0u;
+    uint32_t val0 = *v0;
+    uint32_t val1 = *v1;
+
+    for (int i = 0; i < XTEA_ROUNDS; ++i) {
+        uint32_t temp = ((val1 << 4) ^ (val1 >> 5)) + val1;
+        temp ^= sum + key[sum & 3u];
+        val0 = (val0 + temp) & 0xFFFFFFFFu;
+
+        sum = (sum + TEA_DELTA) & 0xFFFFFFFFu;
+
+        temp = ((val0 << 4) ^ (val0 >> 5)) + val0;
+        temp ^= sum + key[(sum >> 11) & 3u];
+        val1 = (val1 + temp) & 0xFFFFFFFFu;
+    }
+
+    *v0 = val0;
+    *v1 = val1;
+}
+
+static void xtea_decrypt_word_impl(uint32_t *v0, uint32_t *v1, const uint32_t *key) {
+    uint32_t sum = 0u;
+    uint32_t val0 = *v0;
+    uint32_t val1 = *v1;
+
+    // Calculate initial sum
+    for (int i = 0; i < XTEA_ROUNDS; ++i) {
+        sum = (sum + TEA_DELTA) & 0xFFFFFFFFu;
+    }
+
+    for (int i = 0; i < XTEA_ROUNDS; ++i) {
+        uint32_t temp = ((val0 << 4) ^ (val0 >> 5)) + val0;
+        temp ^= sum + key[(sum >> 11) & 3u];
+        val1 = (val1 - temp) & 0xFFFFFFFFu;
+
+        sum = (sum - TEA_DELTA) & 0xFFFFFFFFu;
+
+        temp = ((val1 << 4) ^ (val1 >> 5)) + val1;
+        temp ^= sum + key[sum & 3u];
+        val0 = (val0 - temp) & 0xFFFFFFFFu;
+    }
+
+    *v0 = val0;
+    *v1 = val1;
 }
 
 static int ensure_uint8_buffer(Py_buffer *view, const char *name) {
@@ -108,7 +156,7 @@ static void decrypt_block_impl(uint32_t *v, const uint32_t *key, int n) {
     }
 }
 
-static PyObject *simple_cryptor_encrypt_bytes(PyObject *self, PyObject *args) {
+static PyObject *crypto_simple_cryptor_encrypt_bytes(PyObject *self, PyObject *args) {
     Py_buffer buf_view;
     Py_buffer key_view;
 
@@ -163,7 +211,7 @@ static PyObject *simple_cryptor_encrypt_bytes(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *simple_cryptor_decrypt_bytes(PyObject *self, PyObject *args) {
+static PyObject *crypto_simple_cryptor_decrypt_bytes(PyObject *self, PyObject *args) {
     Py_buffer buf_view;
     Py_buffer key_view;
 
@@ -219,7 +267,7 @@ static PyObject *simple_cryptor_decrypt_bytes(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *xxtea_encrypt_block(PyObject *self, PyObject *args) {
+static PyObject *crypto_xxtea_encrypt_block(PyObject *self, PyObject *args) {
     Py_buffer v_view;
     Py_buffer key_view;
     Py_ssize_t n;
@@ -254,7 +302,7 @@ static PyObject *xxtea_encrypt_block(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *xxtea_decrypt_block(PyObject *self, PyObject *args) {
+static PyObject *crypto_xxtea_decrypt_block(PyObject *self, PyObject *args) {
     Py_buffer v_view;
     Py_buffer key_view;
     Py_ssize_t n;
@@ -289,7 +337,7 @@ static PyObject *xxtea_decrypt_block(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *xxtea_encrypt_block_fixed(PyObject *self, PyObject *args) {
+static PyObject *crypto_xxtea_encrypt_block_fixed(PyObject *self, PyObject *args) {
     Py_buffer v_view;
     Py_buffer key_view;
 
@@ -316,7 +364,7 @@ static PyObject *xxtea_encrypt_block_fixed(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *xxtea_decrypt_block_fixed(PyObject *self, PyObject *args) {
+static PyObject *crypto_xxtea_decrypt_block_fixed(PyObject *self, PyObject *args) {
     Py_buffer v_view;
     Py_buffer key_view;
 
@@ -343,7 +391,7 @@ static PyObject *xxtea_decrypt_block_fixed(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *xxtea_encrypt_blocks(PyObject *self, PyObject *args) {
+static PyObject *crypto_xxtea_encrypt_blocks(PyObject *self, PyObject *args) {
     Py_buffer data_view;
     Py_buffer key_view;
     Py_ssize_t block_count;
@@ -383,7 +431,7 @@ static PyObject *xxtea_encrypt_blocks(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
-static PyObject *xxtea_decrypt_blocks(PyObject *self, PyObject *args) {
+static PyObject *crypto_xxtea_decrypt_blocks(PyObject *self, PyObject *args) {
     Py_buffer data_view;
     Py_buffer key_view;
     Py_ssize_t block_count;
@@ -423,15 +471,59 @@ static PyObject *xxtea_decrypt_blocks(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
+static PyObject *crypto_xtea_encrypt_word(PyObject *self, PyObject *args) {
+    unsigned long v0, v1;
+    Py_buffer key_view;
+
+    if (!PyArg_ParseTuple(args, "kky*", &v0, &v1, &key_view)) {
+        return NULL;
+    }
+
+    if (!ensure_uint32_buffer(&key_view, 4, "key")) {
+        PyBuffer_Release(&key_view);
+        return NULL;
+    }
+
+    uint32_t val0 = (uint32_t)v0;
+    uint32_t val1 = (uint32_t)v1;
+    xtea_encrypt_word_impl(&val0, &val1, (const uint32_t *)key_view.buf);
+
+    PyBuffer_Release(&key_view);
+    return Py_BuildValue("(kk)", (unsigned long)val0, (unsigned long)val1);
+}
+
+static PyObject *crypto_xtea_decrypt_word(PyObject *self, PyObject *args) {
+    unsigned long v0, v1;
+    Py_buffer key_view;
+
+    if (!PyArg_ParseTuple(args, "kky*", &v0, &v1, &key_view)) {
+        return NULL;
+    }
+
+    if (!ensure_uint32_buffer(&key_view, 4, "key")) {
+        PyBuffer_Release(&key_view);
+        return NULL;
+    }
+
+    uint32_t val0 = (uint32_t)v0;
+    uint32_t val1 = (uint32_t)v1;
+    xtea_decrypt_word_impl(&val0, &val1, (const uint32_t *)key_view.buf);
+
+    PyBuffer_Release(&key_view);
+    return Py_BuildValue("(kk)", (unsigned long)val0, (unsigned long)val1);
+}
+
 static PyMethodDef cryptoMethods[] = {
-    {"simple_cryptor_encrypt_bytes", simple_cryptor_encrypt_bytes, METH_VARARGS, "Encrypt bytes in-place using the simple cryptor"},
-    {"simple_cryptor_decrypt_bytes", simple_cryptor_decrypt_bytes, METH_VARARGS, "Decrypt bytes in-place using the simple cryptor"},
-    {"xxtea_encrypt_block", xxtea_encrypt_block, METH_VARARGS, "Encrypt an XXTEA block"},
-    {"xxtea_decrypt_block", xxtea_decrypt_block, METH_VARARGS, "Decrypt an XXTEA block"},
-    {"xxtea_encrypt_block_fixed", xxtea_encrypt_block_fixed, METH_VARARGS, "Encrypt a fixed-size XXTEA block"},
-    {"xxtea_decrypt_block_fixed", xxtea_decrypt_block_fixed, METH_VARARGS, "Decrypt a fixed-size XXTEA block"},
-    {"xxtea_encrypt_blocks", xxtea_encrypt_blocks, METH_VARARGS, "Encrypt multiple XXTEA blocks"},
-    {"xxtea_decrypt_blocks", xxtea_decrypt_blocks, METH_VARARGS, "Decrypt multiple XXTEA blocks"},
+    {"simple_cryptor_encrypt_bytes", crypto_simple_cryptor_encrypt_bytes, METH_VARARGS, "Encrypt bytes in-place using the simple cryptor"},
+    {"simple_cryptor_decrypt_bytes", crypto_simple_cryptor_decrypt_bytes, METH_VARARGS, "Decrypt bytes in-place using the simple cryptor"},
+    {"xxtea_encrypt_block", crypto_xxtea_encrypt_block, METH_VARARGS, "Encrypt an XXTEA block"},
+    {"xxtea_decrypt_block", crypto_xxtea_decrypt_block, METH_VARARGS, "Decrypt an XXTEA block"},
+    {"xxtea_encrypt_block_fixed", crypto_xxtea_encrypt_block_fixed, METH_VARARGS, "Encrypt a fixed-size XXTEA block"},
+    {"xxtea_decrypt_block_fixed", crypto_xxtea_decrypt_block_fixed, METH_VARARGS, "Decrypt a fixed-size XXTEA block"},
+    {"xxtea_encrypt_blocks", crypto_xxtea_encrypt_blocks, METH_VARARGS, "Encrypt multiple XXTEA blocks"},
+    {"xxtea_decrypt_blocks", crypto_xxtea_decrypt_blocks, METH_VARARGS, "Decrypt multiple XXTEA blocks"},
+    {"xtea_encrypt_word", crypto_xtea_encrypt_word, METH_VARARGS, "Encrypt an XTEA word pair"},
+    {"xtea_decrypt_word", crypto_xtea_decrypt_word, METH_VARARGS, "Decrypt an XTEA word pair"},
     {NULL, NULL, 0, NULL}
 };
 
