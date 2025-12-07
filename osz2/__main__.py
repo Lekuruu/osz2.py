@@ -92,7 +92,7 @@ def encrypt_directory(
         beatmap_id = content.get('Metadata', {}).get('BeatmapID', None)
 
         if beatmap_id is not None:
-            package.beatmap_ids[beatmap.filename] = int(beatmap_id)
+            package.set_beatmap_id(beatmap.filename, int(beatmap_id))
 
         apply_metadata(package, content)
 
@@ -124,13 +124,13 @@ def apply_metadata(package: Osz2Package, beatmap: Dict[str, dict]) -> None:
     general_section = beatmap['General']
     preview_time = general_section.get('PreviewTime', 0)
 
-    package.metadata[MetadataType.Title] = str(title)
-    package.metadata[MetadataType.Artist] = str(artist)
-    package.metadata[MetadataType.Creator] = str(creator)
-    package.metadata[MetadataType.Source] = str(source)
-    package.metadata[MetadataType.Tags] = str(tags)
-    package.metadata[MetadataType.BeatmapSetID] = str(beatmapset_id)
-    package.metadata[MetadataType.PreviewTime] = str(preview_time)
+    package.add_metadata(MetadataType.Title, title)
+    package.add_metadata(MetadataType.Artist, artist)
+    package.add_metadata(MetadataType.Creator, creator)
+    package.add_metadata(MetadataType.Source, source)
+    package.add_metadata(MetadataType.Tags, tags)
+    package.add_metadata(MetadataType.BeatmapSetID, beatmapset_id)
+    package.add_metadata(MetadataType.PreviewTime, preview_time)
 
 @typing.no_type_check
 def parse_beatmap(content: str) -> Tuple[int, Dict[str, dict]]:
