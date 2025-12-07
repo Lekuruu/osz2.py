@@ -523,7 +523,7 @@ class Osz2Package:
         buffer.write(struct.pack("<I", len(self.metadata)))
 
         for meta_type, value in self.metadata.items():
-            buffer.write(struct.pack("<H", int(meta_type)))
+            buffer.write(struct.pack("<H", meta_type.value))
             buffer.write(write_string(value or ""))
 
         return buffer.getvalue()
