@@ -64,7 +64,7 @@ def save_osz2(package: Osz2Package, output: str) -> None:
     print(f"Extracting {len(package.files)} files to {output}")
 
     for file in package.files:
-        output_path = os.path.join(output, file.filename)
+        output_path = os.path.join(output, file.filename_sanitized)
 
         if (directory := Path(output_path).parent) != ".":
             directory.mkdir(parents=True, exist_ok=True)
