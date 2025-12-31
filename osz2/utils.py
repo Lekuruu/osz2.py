@@ -5,10 +5,13 @@ import struct
 import typing
 import re
 
-unsafe_characters_pattern = re.compile(r'[<>:"/\\|?*\x00-\x1F]')
+unsafe_characters_pattern = re.compile(r'[<>:"|?*\x00-\x1F]')
+traversal_pattern = re.compile(r'\.\.[\\/]+')
 
 def sanitize_filename(filename: str) -> str:
-    return re.sub(unsafe_characters_pattern, "", filename)
+    filename = re.sub(unsafe_characters_pattern, "", filename)
+    filename = re.sub(traversal_pattern, "", filename)
+    return filename
 
 def bytes_to_uint32_array(data: bytes) -> typing.List[int]:
     return [x[0] for x in struct.iter_unpack("<I", data)]
