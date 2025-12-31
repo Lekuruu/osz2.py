@@ -1,5 +1,6 @@
 
 from .constants import ALLOWED_FILE_EXTENSIONS, VIDEO_FILE_EXTENSIONS
+from .utils import sanitize_filename
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -13,12 +14,14 @@ class File:
     date_modified: datetime
     content: bytes
 
+    def __post_init__(self) -> None:
+        self.filename = sanitize_filename(self.filename)
+
     @property
     def file_extension(self) -> str:
-        return (
-            self.filename.split('.')[-1].lower()
-            if '.' in self.filename else ''
-        )
+        name = self.filename.strip().lower()
+        name_parts = name.rsplit('.', 1)
+        return name_parts[1] if len(name_parts) == 2 else ''
 
     @property
     def is_allowed_extension(self) -> bool:
@@ -30,10 +33,10 @@ class File:
 
     @property
     def is_beatmap(self) -> bool:
-        return self.filename.endswith('.osu')
+        return self.file_extension == 'osu'
     
     @property
     def is_combined_beatmap(self) -> bool:
         # NOTE: This is an osu!stream specific file format
         # https://github.com/ppy/osu-stream/blob/master/BeatmapCombinator/Program.cs#L31
-        return self.filename.endswith('.osc')
+        return self.file_extension == 'osc'
