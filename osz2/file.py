@@ -14,14 +14,15 @@ class File:
     date_modified: datetime
     content: bytes
 
-    def __post_init__(self) -> None:
-        self.filename = sanitize_filename(self.filename)
-
     @property
     def file_extension(self) -> str:
         name = self.filename.strip().lower()
         name_parts = name.rsplit('.', 1)
         return name_parts[1] if len(name_parts) == 2 else ''
+
+    @property
+    def filename_sanitized(self) -> str:
+        return sanitize_filename(self.filename)
 
     @property
     def is_allowed_extension(self) -> bool:

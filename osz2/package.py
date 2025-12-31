@@ -146,7 +146,7 @@ class Osz2Package:
                     continue
 
                 # Create ZipInfo to set file metadata
-                zip_info = zipfile.ZipInfo(filename=file.filename)
+                zip_info = zipfile.ZipInfo(filename=file.filename_sanitized)
                 zip_info.compress_type = compression
                 zip_info.date_time = file.date_modified.timetuple()[:6]
 
