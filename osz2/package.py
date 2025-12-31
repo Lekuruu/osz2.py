@@ -41,6 +41,9 @@ class Osz2Package:
         if reader is not None:
             self.read(reader, metadata_only)
 
+    def __repr__(self) -> str:
+        return f"<Osz2Package files={self.files} metadata={self.metadata}>"
+
     @classmethod
     def from_file(cls, path: str, metadata_only=False, key_type=KeyType.OSZ2) -> "Osz2Package":
         """Read an osz2 package from a file path"""

@@ -14,6 +14,9 @@ class File:
     date_modified: datetime
     content: bytes
 
+    def __repr__(self) -> str:
+        return f"<File '{self.filename}' ({self.size} bytes)>"
+
     @property
     def file_extension(self) -> str:
         name = self.filename.strip().lower()
