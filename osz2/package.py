@@ -13,6 +13,7 @@ from .utils import *
 import zipfile
 import secrets
 import struct
+import stat
 import os
 import io
 
@@ -152,6 +153,7 @@ class Osz2Package:
                 zip_info = zipfile.ZipInfo(filename=file.filename_sanitized)
                 zip_info.compress_type = compression
                 zip_info.date_time = file.date_modified.timetuple()[:6]
+                zip_info.external_attr = (stat.S_IFREG | 0o664) << 16
 
                 # Check if date_time is valid for zip format
                 if zip_info.date_time[0] < 1980:
