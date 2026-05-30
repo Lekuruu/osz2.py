@@ -4,7 +4,7 @@
 [![GitHub License](https://img.shields.io/github/license/Lekuruu/osz2.py)](https://github.com/Lekuruu/osz2.py/blob/main/LICENSE)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Lekuruu/osz2.py/.github%2Fworkflows%2Fbuild.yml)](https://github.com/Lekuruu/osz2.py/actions/workflows/build.yml)
 
-osz2.py is a Python library for reading osz2 files. It's a direct port of the existing [Osz2Decryptor](https://github.com/xxCherry/Osz2Decryptor) project by [xxCherry](https://github.com/xxCherry) and [osz2-go](https://github.com/Lekuruu/osz2-go) by me. The Python port itself was done by [@ascenttree](https://github.com/ascenttree); all credit goes to them. I took part in code refactoring and optimizing the performance by moving the heavy crypto primitives into a native C extension (`osz2.crypto`) on top of [NumPy](https://numpy.org/), bringing encryption time down to ~100 ms  instead of 25 seconds.
+osz2.py is a Python library for reading osz2 files. It's a direct port of the existing [Osz2Decryptor](https://github.com/xxCherry/Osz2Decryptor) project by [xxCherry](https://github.com/xxCherry) and [osz2-go](https://github.com/Lekuruu/osz2-go) by me.
 
 This project *won't* provide beatmap parsing support. You will have to implement that by yourself, if you decide to use this library for implementing the beatmap submission system.
 
