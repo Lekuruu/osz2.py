@@ -1,6 +1,6 @@
 # osz2.py
 
-[![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
+[![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![GitHub License](https://img.shields.io/github/license/Lekuruu/osz2.py)](https://github.com/Lekuruu/osz2.py/blob/main/LICENSE)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Lekuruu/osz2.py/.github%2Fworkflows%2Fbuild.yml)](https://github.com/Lekuruu/osz2.py/actions/workflows/build.yml)
 
