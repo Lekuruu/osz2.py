@@ -18,7 +18,7 @@ def generate_osz2_key(metadata: Dict[MetadataType, str]) -> bytes:
     creator = metadata[MetadataType.Creator]
     beatmapset_id = metadata[MetadataType.BeatmapSetID]
     seed = f"{creator}yhxyfjo5{beatmapset_id}"
-    return md5(seed.encode("utf-8")).digest()
+    return md5(seed.encode("ascii", "replace")).digest()
 
 def generate_osf2_key(metadata: Dict[MetadataType, str]) -> bytes:
     assert MetadataType.Title in metadata, "Metadata is missing title"
@@ -27,7 +27,7 @@ def generate_osf2_key(metadata: Dict[MetadataType, str]) -> bytes:
     title = metadata[MetadataType.Title]
     artist = metadata[MetadataType.Artist]
     seed = f"\x08{title}4390gn8931i{artist}"
-    return md5(seed.encode("utf-8")).digest()
+    return md5(seed.encode("ascii", "replace")).digest()
 
 KeyGenerator = Callable[[Dict[MetadataType, str]], bytes]
 Mapping: Dict[KeyType, KeyGenerator] = {
