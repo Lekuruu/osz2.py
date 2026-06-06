@@ -16,6 +16,7 @@ class MetadataType(IntEnum):
     Language = 11
     TitleUnicode = 12
     ArtistUnicode = 13
+    Protocol = 14  # Unsure what this is, but some osf2 files set it to "http"
     Unknown = 9999
     Difficulty = 10000
     PreviewTime = 10001

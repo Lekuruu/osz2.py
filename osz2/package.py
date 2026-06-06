@@ -359,7 +359,7 @@ class Osz2Package:
 
         # Store data offset
         self.data_offset = reader.tell()
-        
+
         file_data = reader.read()
         file_offset = reader.seek(0, 1)
         total_size = reader.seek(0, 2)
@@ -448,7 +448,7 @@ class Osz2Package:
         self.metadata_hash = hash_meta
 
         beatmap_files = {
-            f.filename: self.beatmap_ids.get(f.filename, -1) 
+            f.filename: self.beatmap_ids.get(f.filename, -1)
             for f in self.files if f.is_beatmap
         }
         writer.write(struct.pack("<I", len(beatmap_files)))
